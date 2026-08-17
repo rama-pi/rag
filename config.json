@@ -1,0 +1,7 @@
+{
+    "wanted_model": "llama3.2",
+    "wanted_mode": "nostream",
+    "history_file": "history.json",
+    "conversation_size": 10,
+    "search_type": "re"
+}
