@@ -5,7 +5,7 @@ from pathlib import Path
 import importlib
 
 from framework.base_classes import Model, Retriever
-from framework.helpers import remove_unwanted
+from framework.helpers import remove_unwanted, discover
 
 
 '''
@@ -47,7 +47,6 @@ def discover(path: str):
 
             # 3. Now import
             importlib.import_module(module_name)
-'''
 
 def discover(plugin_subfolder: str):
     """
@@ -83,6 +82,7 @@ def discover(plugin_subfolder: str):
         except Exception as e:
             print(f"[Framework Error] Failed to load plugin {full_module_name}: {e}")
 
+'''
 
 def load_config():
     global config
