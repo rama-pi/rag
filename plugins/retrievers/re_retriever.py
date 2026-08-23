@@ -7,7 +7,6 @@ from framework.helpers import remove_unwanted
 class Retriever_RE(Retriever, retriever_name='re'):
     def __init__(self, retriever_name):
         pass
-    #def retrieve(self, past_q_w, curr_q_w):
     def retrieve(self, past_q_a: str, curr_q: str):
         # to increase the search hit search past Q & A too
         past_q_w, curr_q_w = remove_unwanted(past_q_a, curr_q)

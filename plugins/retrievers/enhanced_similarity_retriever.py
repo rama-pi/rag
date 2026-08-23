@@ -59,11 +59,6 @@ class EnhancedSimilarityRetriever(Retriever, retriever_name="enhanced_similarity
         cosine_similarity = np.dot(vector1, vector2) / (np.linalg.norm(vector1) * np.linalg.norm(vector2))
         return cosine_similarity
     def retrieve(self, text1, text2):
-        if not isinstance(text1, str):
-            text1 = " ".join(text1)
-        if not isinstance(text2, str):
-            text2 = " ".join(text2)
-
         cs =  self.calculate_enhanced_similarity(self,text1, text2)
         if cs:
             return {"matched": True,

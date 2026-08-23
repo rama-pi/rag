@@ -8,18 +8,6 @@ from framework.base_classes import Model, Retriever
 from framework.helpers import remove_unwanted, discover
 
 
-'''
-#framework imports
-from model import Model
-from document import Document
-from chunker import Chunker
-from loader   import Loader
-from preprocessor import PreProcessor
-from retriever import Retriever
-from parser import Parser
-from page import Page
-'''
-
 config = {
     "wanted_model": "llama3.2",
     "wanted_mode" : "stream",
@@ -27,62 +15,6 @@ config = {
     "conversation_size": 10,
     "search_type" : "re",
 }
-
-'''
-#discover plug-in's
-def discover(path: str):
-    # 1. Convert to Path and make it absolute
-    dir_path = Path(path).resolve()
-
-    # 2. Add to sys.path so Python knows where to look
-    sys.path.append(str(dir_path))
-
-    for file_path in dir_path.iterdir():
-        if (
-            file_path.is_file()
-            and file_path.suffix == ".py"
-            and file_path.name != "__init__.py"
-        ):
-            module_name = file_path.stem
-
-            # 3. Now import
-            importlib.import_module(module_name)
-
-def discover(plugin_subfolder: str):
-    """
-    Dynamically loads all Python modules in a given plugins subfolder.
-    Example: discover("plugins/models")
-    """
-    # 1. Convert the folder path to a proper path object relative to project root
-    base_path = Path(plugin_subfolder)
-    if not base_path.exists():
-        print(f"[Framework Warning] Plugin directory {plugin_subfolder} not found.")
-        return
-
-    # 2. Convert the folder path structure to a Python module path notation
-    # e.g., "plugins/models" becomes "plugins.models"
-    package_prefix = plugin_subfolder.replace("/", ".").strip(".")
-
-    # 3. Iterate over every entry in the directory
-    for entry in os.listdir(base_path):
-        # Skip hidden files (like .DS_Store), private files (__init__.py), and directories
-        if entry.startswith('.') or entry.startswith('__') or not entry.endswith('.py'):
-            continue
-
-        # Strip the '.py' extension to get the module name
-        module_file_name = entry[:-3]
-
-        # Construct the absolute import module path string (e.g., "plugins.models.llama_model")
-        full_module_name = f"{package_prefix}.{module_file_name}"
-
-        try:
-            print(f"[Framework] Dynamically loading plugin: {full_module_name}")
-            # The python equivalent of a dynamic dlopen()
-            importlib.import_module(full_module_name)
-        except Exception as e:
-            print(f"[Framework Error] Failed to load plugin {full_module_name}: {e}")
-
-'''
 
 def load_config():
     global config
@@ -110,8 +42,6 @@ class ConversationBuilder():
         messages = []
         hist_sorted = dict(sorted(history.items()))
         for k,v in hist_sorted.items():
-            #past_q_w, curr_q_w = remove_unwanted(" ".join((v["question"], v["answer"])), question)
-            #score = self.retriever.retrieve(past_q_w, curr_q_w)
             score = self.retriever.retrieve(" ".join((v["question"], v["answer"])), question)
             if score and score["score"]:
                 temp_list.append((k, v, score["score"]))
