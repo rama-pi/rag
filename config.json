@@ -3,5 +3,5 @@
     "wanted_mode": "nostream",
     "history_file": "history.json",
     "conversation_size": 10,
-    "search_type": "re"
+    "search_type": "enhanced_similarity_retriever"
 }

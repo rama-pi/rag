@@ -30,17 +30,6 @@ class Model(ABC):
         cls.model_modes = model_modes
         Model.registry[model_name] = cls
 
-class Chunker(ABC):
-    registry = {}
-
-    @abstractmethod
-    def chunk(self, segment: str):
-        pass
-    def __init_subclass__(cls, chunker_type=None, **kwargs):
-        super().__init_subclass__(**kwargs)
-        cls.chunker_type = chunker_type
-        Chunker.registry[chunker_type] = cls
-
 class Document(ABC):
     registry = {}
 
@@ -100,6 +89,18 @@ class Loader(ABC):
         super().__init_subclass__(**kwargs)
         cls.loader_type = loader_type
         Loader.registry[loader_type] = cls
+
+class Chunker(ABC):
+    registry = {}
+
+    @abstractmethod
+    def chunk(self, segment: str):
+        pass
+    def __init_subclass__(cls, chunker_type=None, **kwargs):
+        super().__init_subclass__(**kwargs)
+        cls.chunker_type = chunker_type
+        Chunker.registry[chunker_type] = cls
+
 
 class Parser(ABC):
     registry = {}

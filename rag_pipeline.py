@@ -110,8 +110,9 @@ class ConversationBuilder():
         messages = []
         hist_sorted = dict(sorted(history.items()))
         for k,v in hist_sorted.items():
-            past_q_w, curr_q_w = remove_unwanted(" ".join((v["question"], v["answer"])), question)
-            score = self.retriever.retrieve(past_q_w, curr_q_w)
+            #past_q_w, curr_q_w = remove_unwanted(" ".join((v["question"], v["answer"])), question)
+            #score = self.retriever.retrieve(past_q_w, curr_q_w)
+            score = self.retriever.retrieve(" ".join((v["question"], v["answer"])), question)
             if score and score["score"]:
                 temp_list.append((k, v, score["score"]))
         temp_list.sort(key=lambda item: item[2])

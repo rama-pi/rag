@@ -1,4 +1,5 @@
 from .base_classes import Page, Model, Chunker, Document, Loader, Parser, PreProcessor, Retriever
+from .test_classes import Test
 from .helpers import remove_unwanted
 
 __all__ = [
@@ -10,6 +11,7 @@ __all__ = [
         "Parser",
         "PreProcessor",
         "Retriever",
-        "remove_unwanted"
+        "remove_unwanted",
+        "Test",
         ]
 
