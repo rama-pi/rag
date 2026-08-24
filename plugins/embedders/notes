@@ -1,0 +1,8 @@
+
+many embedding models, potentially differing in:
+	- vector dimensionality
+	- language support
+	- context length
+	- semantic quality
+	- speed
+	- model size
