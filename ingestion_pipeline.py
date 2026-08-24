@@ -53,10 +53,12 @@ def main():
     pd.dump_paras(page=0)
     paras = pd.parse_paras(page=0)
     chunks = pd.chunk(paras[-1])
-    for i,c in enumerate(chunks,1):
-        print(f'Chunk {i}')
-        print(c)
-        print(len(c), ' ','-' * 40)
+    for para in paras:
+        chunks = pd.chunk(para)
+        for i,c in enumerate(chunks,1):
+            print(f'Chunk {i}')
+            print(c)
+            print(len(c), ' ','-' * 40)
 
 if __name__ == "__main__":
     main()
