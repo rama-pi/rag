@@ -8,7 +8,7 @@ import numpy as np
 from framework.base_classes import Retriever
 
 class EnhancedSimilarityRetriever(Retriever, retriever_name="enhanced_similarity_retriever"):
-    def __init__(self, retriever_name):
+    def __init__(self):
         self.nlp = spacy.load("en_core_web_sm")
         return
     @staticmethod

@@ -1,0 +1,78 @@
+SQLite can support vector database capabilities, but it requires a specialized extension because native SQLite does not include 
+vector types or similarity search out of the box.
+
+By default, SQLite only supports data types like integers, text, and blobs.  To handle vector embeddings, you must load an external 
+extension that introduces a native vector data type, high-performance distance functions (like Cosine or L2 distance), and index 
+acceleration structures like Hierarchical Navigable Small World (HNSW).
+
+
+The Two Best Extensions for SQLite Vector Search:
+************************************************
+
+Because SQLite is modular, developers have created powerful extensions specifically designed for local Retrieval-Augmented Generation 
+(RAG) pipelines:
+
+|Extension Name | Primary Developer / Backer             | Key Features & Strengths                | Best For                                  |
+|---------------|----------------------------------------|-----------------------------------------|-------------------------------------------|
+|sqlite-vec     | Alex Garcia (independent / open-source)| Written in pure C; extremely lightweight| Minimalist setups,mobile apps,edge devices|
+|               |                                        | zero dependencies; highly portable      |                                           |
+|               |                                        |                                         |                                           |
+|sqlite-vss     | Alex Garcia / Powered by Faiss         | Utilizes Facebook's powerful FAISS      | Larger local datasets requiring advanced  |
+|               |                                        | library; highly performant on massive   | clustering                                |
+|               |                                        | datasets.                               |                                           |
+------------------------------------------------------------------------------------------------------------------------------------------------
+
+
+- Flat/Linear Search: SQLite scans every single row one by one. This is fast for 1,000 items, but becomes painfully slow as you reach 
+  tens of thousands of rows.
+- Indexed Search (HNSW): The extension builds a navigational graph structure. Searching takes a tiny, nearly flat fraction of a second, 
+  regardless of how many vectors you add.
+
+
+Ex Table creation, Insert, Vector match:
+***************************************
+CREATE VIRTUAL TABLE vec_articles USING vec_each  <- deviation from standard
+	core deviation from standard by sev support add is  VIRTUAL and USING.
+
+	When you use those keywords, you are telling SQLite: "Do not use your normal, built-in storage engine for this table. Instead, 
+	hand control over to an external extension module."Here is the exact breakdown of how a standard table creation differs from a 
+	virtual table creation:
+
+INSERT INTO articles (id, title, content, embedding) VALUES (?, ?, ?, ?)", (article_id, title, content, blob_vector) <- syntax as standard
+	but deviation is; 
+  		- Virtual Table (sqlite-vec): SQLite intercepts the INSERT command. It hands the binary BLOB vector over to the sqlite-vec 
+		  extension, 
+    		  which instantly runs the math to place that vector into its specialized spatial index graph.
+  		- sqlite-vec converts your Python float array into a raw binary BLOB of 4-byte floating-point numbers.
+  
+SELECT ... WHERE v.headline_embedding MATCH ? AND v.k = 1 <- deviation from standard
+	uses a syntax trick unique to SQLite extensions,.
+	1. MATCH ? (The Distance Calculator)
+		In standard SQL, you use = to find exact matches or LIKE to find matching text.
+		But with vectors, you never look for an exact match. You look for the closest vector using geometry.
+			- The Deviation: sqlite-vec overrides the standard SQL MATCH keyword.
+			- What it does: Instead of looking for a matching string, MATCH ? tells the database engine: "Take the user's 
+			  query vector (the ?), calculate the mathematical distance to every vector in the table, and rank them from 
+			  closest to furthest.
+	2. AND v.k = 1 (The Limit / Neighbor Count)
+		In normal SQL, if you only want the top result, you put LIMIT 1 at the very end of your query.
+		With virtual vector tables, you must use k = 1 inside the WHERE clause instead.
+			- The "K" Parameter: In data science, "K" stands for K-Nearest Neighbors.
+			- Why it is in the WHERE clause: The underlying C-code of sqlite-vec needs to know before it starts searching 
+			  how many close items you want. Passing v.k = 1 forces the internal index search algorithm to stop immediately 
+			  after finding the single best match, saving a massive amount of CPU cycles.
+			
+
+
+
+Structural Comparison:
+*********************
+
+|Feature       |  Standard Table Syntax | Virtual Table Syntax                                 |
+|----------------------------------------------------------------------------------------------|
+|Keywords      | CREATE TABLE           | CREATE VIRTUAL TABLE                                 |
+|Engine        | SQLite Native B-Tree   | External Module (e.g., vec_each)                     |
+|Configuration | Explicit column types  | Module-specific arguments (like USING vec_each(...)) |
+|----------------------------------------------------------------------------------------------|
+
+

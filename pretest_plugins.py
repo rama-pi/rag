@@ -21,7 +21,7 @@ def main():
     discover("plugins/chunkers/")
     discover("plugins/preprocessors/")
 
-    discover("tests/retrievers/")
+    discover("plugins_tests/retrievers/")
 
     for v in Test.registry.values():
         t = v()
