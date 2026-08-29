@@ -1,7 +1,11 @@
 {
     "wanted_model": "llama3.2",
-    "wanted_mode": "nostream",
+    "embed_model": "nomic-embed-text",
+    "wanted_mode": "stream",
     "history_file": "history.json",
     "conversation_size": 10,
-    "search_type": "enhanced_similarity_retriever"
+    "search_type": "re",
+    "loader_type": "pdf",
+    "parser_type": "pdf",
+    "chunker_type": "recursive"
 }

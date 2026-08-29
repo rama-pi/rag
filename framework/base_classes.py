@@ -33,8 +33,45 @@ class Model(ABC):
 class Document(ABC):
     registry = {}
 
+    def __init__(self, config: dict):
+        self.loader = None
+        self.parser = None
+        self.chunker = None
+        self.embedder = None
+        self.pages = []
+
+        loader_type = config['loader_type']
+        if Loader.registry[loader_type]:
+            self.loader = Loader.registry[loader_type](loader_type=loader_type)
+        else:
+            raise RunTimeError(
+                    f"No loaddr plugin registered as {loader_type}"
+                    )
+
+        parser_type = config['parser_type']
+        if Parser.registry[parser_type]:
+            self.parser = Parser.registry[parser_type](parser_type = parser_type)
+        else:
+            raise RunTimeError(
+                    f"No parser plugin registered as {parser_type}"
+                    )
+
+        chunker_type = config['chunker_type']
+        if Chunker.registry[chunker_type]:
+            self.chunker = Chunker.registry[chunker_type](chunker_type=chunker_type)
+        else:
+            raise RunTimeError(
+                    f"No chunker plugin registered as {chunker_type}"
+                    )
+        embed_model = config['embed_model']
+        if Embedder.registry[embed_model]:
+            self.embedder = Embedder.registry[embed_model](embed_model=embed_model)
+        else:
+            raise RunTimeError(
+                    f"No embedder registered as {embed_model}"
+                    )
     @classmethod
-    def open(cls, path: str|Path):
+    def open(cls, path: str|Path, config: dict):
         doc_type = Path(path).suffix.lower().lstrip(".")
 
         try:
@@ -43,7 +80,7 @@ class Document(ABC):
             raise RunTimeError(
                     f"No Document plugin registered for '{doc_type}'"
                     )
-        doc = doc_cls(document_type='pdf')
+        doc = doc_cls(document_type='pdf', config=config)
         doc.load(path)
         return doc
     @abstractmethod
@@ -72,6 +109,9 @@ class Document(ABC):
         pass
     @abstractmethod
     def chunk(self, segment: str):
+        pass
+    @abstractmethod
+    def embed(self, chunks: list):
         pass
 
     def __init_subclass__(cls, document_type=None, **kwargs):
@@ -174,4 +214,25 @@ class Retriever(ABC):
         cls.retriever_name = retriever_name
         Retriever.registry[retriever_name] = cls
 
+class Embedder(ABC):
+    registry = {}
+
+    @abstractmethod
+    def embed(self, chunks: list):
+        pass
+    def __init_subclass__(cls, embed_model=None, **kwargs):
+        super().__init_subclass__(**kwargs)
+        cls.embed_model = embed_model
+        Embedder.registry[embed_model] = cls
+
+class Storer(ABC):
+    registry = {}
+
+    @abstractmethod
+    def store(self, chunk: list, vec: list):
+        pass
+    def __init_subclass__(cls, storage_name=None, **kwargs):
+        super().__init_subclass__(**kwargs)
+        cls.storage_name = storage_name
+        Storer.registry[storage_name] = cls
 

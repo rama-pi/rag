@@ -9,11 +9,17 @@ from framework.helpers import remove_unwanted, discover
 from framework.base_classes import Document
 
 config = {
-    "wanted_model": "llama3.2",
-    "wanted_mode" : "stream",
-    "history_file": "history.json",
-    "conversation_size": 10,
-    "search_type" : "re",
+    "wanted_model"     : "llama3.2",
+    "embed_model"      : "nomic-embed-text",
+    "wanted_mode"      : "stream",
+    "history_file"     : "history.json",
+    "conversation_size": 10, # limit to smaller than models context window size
+    "search_type"      : "re",
+    "loader_type"      : "pdf",
+    "parser_type"      : "pdf",
+    "chunker_type"     : "recursive",
+
+
 }
 
 def load_config():
@@ -43,10 +49,12 @@ def main():
     discover("plugins/loaders/")
     discover("plugins/parsers/")
     discover("plugins/chunkers/")
+    discover("plugins/embedders/")
+    discover("plugins/storers/")
 
     load_config()
 
-    pd = Document.open("sample_chunking_text.pdf")
+    pd = Document.open("sample_chunking_text.pdf", config)
     pd.dump_pages()
     pd.dump_words(page=0)
     pd.dump_lines(page=0)
@@ -59,6 +67,7 @@ def main():
             print(f'Chunk {i}')
             print(c)
             print(len(c), ' ','-' * 40)
+    print(pd.embed(chunks))
 
 if __name__ == "__main__":
     main()

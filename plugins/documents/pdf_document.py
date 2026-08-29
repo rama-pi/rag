@@ -12,30 +12,8 @@ from chunker import Chunker
 '''
 
 class PdfDocument(Document, document_type='pdf'):
-    def __init__(self, document_type):
-        self.loader = None
-        self.parser = None
-        self.pages = []
-
-        if Loader.registry["pdf"]:
-            self.loader = Loader.registry["pdf"](loader_type="pdf")
-        else:
-            raise RunTimeError(
-                    f"No loaddr plugin registered as pdf"
-                    )
-        if Parser.registry["pdf"]:
-            self.parser = Parser.registry["pdf"](parser_type="pdf")
-        else:
-            raise RunTimeError(
-                    f"No parser plugin registered as pdf"
-                    )
-        if Chunker.registry["recursive"]:
-            self.chunker = Chunker.registry["recursive"](chunker_type="recursive")
-        else:
-            raise RunTimeError(
-                    f"No chunker plugin registered as recursive"
-                    )
-            return
+    def __init__(self, document_type: str, config: dict):
+        super().__init__(config)
     def load(self, path: str|Path):
         self.pages = self.loader.load(path)
     def dump_words(self, page: int):
@@ -54,3 +32,6 @@ class PdfDocument(Document, document_type='pdf'):
         self.parser.dump_pages(self.pages)
     def chunk(self, segment: str):
         return self.chunker.chunk(segment)
+    def embed(self, chunks: list):
+        return self.embedder.embed(chunks)
+
