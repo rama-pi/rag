@@ -62,17 +62,6 @@ class SQLiteStorer(Storer, storage_type="sqlite"):
         return
 
     def query(self, query_vec: list):
-        """
-        response = ollama.embed(
-                model="nomic-embed-text",
-                input=chunk
-                )
-        query_vector = struct.pack(
-                f"{len(response.embeddings[0])}f",
-                *response.embeddings[0]
-                )
-        """
-
         results = self.db_conn.execute(
                 """
                 SELECT chunk_id, distance
