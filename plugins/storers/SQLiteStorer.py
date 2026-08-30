@@ -73,5 +73,14 @@ class SQLiteStorer(Storer, storage_type="sqlite"):
                 ,
                 (query_vec,)
                 ).fetchall()
-        return results
+        # convert row-id's to chunks
+        t = tuple(i[0] for i in results)
+        placeholders = ",".join("?" for _ in t)
+        rows = self.db_conn.execute(
+                f"SELECT chunk_id, text FROM chunks WHERE chunk_id IN ({placeholders})", t
+                ).fetchall()
+
+        # add distance to rows 
+        rows = [rows[i]+(result[1],) for i, result in enumerate(results)]
+        return rows
 

@@ -1,0 +1,77 @@
+
+BM25 finds text that contains the important words from the query, and scores how well each document/chunk matches those words.
+
+Ex:
+
+                   BM25
+                    │
+             query: "fox deer"
+                    │
+          ┌─────────┴─────────┐
+          ↓                   ↓
+     query terms          all chunks
+                              │
+                    ┌─────────┼─────────┐
+                    ↓         ↓         ↓
+                  Chunk 1   Chunk 2   Chunk 3
+                    │         │         │
+                 score      score      score
+                    │         │         │
+                    └─────────┼─────────┘
+                              ↓
+                         ranked results
+
+our vector search - Which chunk has the most similar meaning?
+BM25 asks something different - Which chunk contains the important words from my query?
+
+
+BM25 score
+   │
+   ├── TF
+   │     └── does the term occur, and how often?
+   │           ↳ diminishing returns
+   │
+   ├── IDF
+   │     └── how rare is the term across chunks?
+   │
+   └── document-length normalization
+         └── don't unfairly favor long chunks
+
+first few occurrences of a vocab -
+        → useful increase
+
+many more occurrences of a vocab -
+        → progressively smaller increase
+          i.e instead of using TF as a score (aka weight), a normalized scope is determined.
+              this calculation based on IDF, TF, length of doc in words, average lenght of doc, 2 hyper parameters
+
+                 BM25 score (aka weight)
+                     │
+        ┌────────────┼────────────┐
+        ↓            ↓            ↓
+       IDF          TF       length normalization
+        │            │            │
+   rarity across   frequency   this doc vs
+   all documents   in this doc  average doc
+                     │
+                     ↓
+              2 hyperparameters
+
+
+                 Query
+                   │
+          ┌────────┴────────┐
+          ▼                 ▼
+      Vector              BM25
+          │                 │
+       top-k              top-k
+          │                 │
+          └────────┬────────┘
+                   ▼
+              combine/rank
+                   │
+                   ▼
+             final chunks
+                   │
+                   ▼
+                  LLM
