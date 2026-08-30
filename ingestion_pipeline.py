@@ -72,7 +72,8 @@ def main():
             print(len(c), ' ','-' * 40)
     vecs = pd.embed(chunks)
     pd.store(chunks, vecs)
-    print(pd.query("The landscape of modern technology changed permanently"))
+    closest_vecs = pd.query("The landscape of modern technology changed permanently")
+    print(closest_vecs)
 
 
 if __name__ == "__main__":

@@ -1,4 +1,5 @@
 from pathlib import Path
+import struct
 
 from framework.base_classes import Document
 from framework.base_classes import Loader
@@ -34,5 +35,10 @@ class PdfDocument(Document, document_type='pdf'):
     def store(self, chunks: list, store_vecs: list):
         return self.storer.store(chunks, store_vecs)
     def query(self, chunk: str):
-        return self.storer.query(chunk)
+        q_v = self.embedder.embed(chunk)
+        q_v = struct.pack(
+                f"{len(q_v.embeddings[0])}f",
+                *q_v.embeddings[0]
+                )
+        return self.storer.query(q_v)
 

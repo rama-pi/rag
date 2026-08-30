@@ -61,7 +61,8 @@ class SQLiteStorage(Storer, storage_type="sqlite"):
                         )
         return
 
-    def query(self, chunk: str):
+    def query(self, query_vec: list):
+        """
         response = ollama.embed(
                 model="nomic-embed-text",
                 input=chunk
@@ -70,6 +71,7 @@ class SQLiteStorage(Storer, storage_type="sqlite"):
                 f"{len(response.embeddings[0])}f",
                 *response.embeddings[0]
                 )
+        """
 
         results = self.db_conn.execute(
                 """
@@ -80,7 +82,7 @@ class SQLiteStorage(Storer, storage_type="sqlite"):
                 LIMIT 3
                 """
                 ,
-                (query_vector,)
+                (query_vec,)
                 ).fetchall()
         return results
 
