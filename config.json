@@ -1,6 +1,8 @@
 {
     "wanted_model": "llama3.2",
     "embed_model": "nomic-embed-text",
+    "storage_type": "sqlite",
+    "storage_name": "rag_collection.db",
     "wanted_mode": "stream",
     "history_file": "history.json",
     "conversation_size": 10,

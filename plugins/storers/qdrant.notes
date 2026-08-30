@@ -1,0 +1,15 @@
+Qdrant   → collection
+
+Qdrant
+database/server
+  └── collections
+        └── points/vectors
+
+Qdrant
+  └── collection: "documents"
+          ├── vector + payload
+          ├── vector + payload
+          ├── vector + payload
+          └── ...
+
+

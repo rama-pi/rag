@@ -4,12 +4,9 @@ from framework.base_classes import Document
 from framework.base_classes import Loader
 from framework.base_classes import Parser
 from framework.base_classes import Chunker
+from framework.base_classes import Embedder
+from framework.base_classes import Storer
 
-'''
-from loader import Loader
-from parser import Parser
-from chunker import Chunker
-'''
 
 class PdfDocument(Document, document_type='pdf'):
     def __init__(self, document_type: str, config: dict):
@@ -34,4 +31,8 @@ class PdfDocument(Document, document_type='pdf'):
         return self.chunker.chunk(segment)
     def embed(self, chunks: list):
         return self.embedder.embed(chunks)
+    def store(self, chunks: list, store_vecs: list):
+        return self.storer.store(chunks, store_vecs)
+    def query(self, chunk: str):
+        return self.storer.query(chunk)
 

@@ -1,5 +1,8 @@
 from abc import ABC, abstractmethod
 from pathlib import Path
+from builtins import RuntimeError
+
+
 
 class Page():
     def __init__(self):
@@ -40,36 +43,49 @@ class Document(ABC):
         self.embedder = None
         self.pages = []
 
+        # Loader
         loader_type = config['loader_type']
         if Loader.registry[loader_type]:
             self.loader = Loader.registry[loader_type](loader_type=loader_type)
         else:
-            raise RunTimeError(
+            raise RuntimeError(
                     f"No loaddr plugin registered as {loader_type}"
                     )
 
+        # Parser
         parser_type = config['parser_type']
         if Parser.registry[parser_type]:
             self.parser = Parser.registry[parser_type](parser_type = parser_type)
         else:
-            raise RunTimeError(
+            raise RuntimeError(
                     f"No parser plugin registered as {parser_type}"
                     )
 
+        # Chunker
         chunker_type = config['chunker_type']
         if Chunker.registry[chunker_type]:
             self.chunker = Chunker.registry[chunker_type](chunker_type=chunker_type)
         else:
-            raise RunTimeError(
+            raise RuntimeError(
                     f"No chunker plugin registered as {chunker_type}"
                     )
+        # Embedder
         embed_model = config['embed_model']
         if Embedder.registry[embed_model]:
             self.embedder = Embedder.registry[embed_model](embed_model=embed_model)
         else:
-            raise RunTimeError(
+            raise RuntimeError(
                     f"No embedder registered as {embed_model}"
                     )
+        # Storer
+        storage_type = config['storage_type']
+        if Storer.registry[storage_type]:
+            self.storer = Storer.registry[storage_type](storage_type=storage_type, db_collection=config['storage_name'])
+        else:
+            raise RuntimeError(
+                    f"No storer plugin registered as {storage_type}"
+                    )
+
     @classmethod
     def open(cls, path: str|Path, config: dict):
         doc_type = Path(path).suffix.lower().lstrip(".")
@@ -77,7 +93,7 @@ class Document(ABC):
         try:
             doc_cls = cls.registry[doc_type]
         except KeyError:
-            raise RunTimeError(
+            raise RuntimeError(
                     f"No Document plugin registered for '{doc_type}'"
                     )
         doc = doc_cls(document_type='pdf', config=config)
@@ -112,6 +128,11 @@ class Document(ABC):
         pass
     @abstractmethod
     def embed(self, chunks: list):
+        pass
+    @abstractmethod
+    def store(self, chunks: list, store_vecs: list):
+        pass
+    def query(self, chunk: str):
         pass
 
     def __init_subclass__(cls, document_type=None, **kwargs):
@@ -229,10 +250,13 @@ class Storer(ABC):
     registry = {}
 
     @abstractmethod
-    def store(self, chunk: list, vec: list):
+    def store(self, chunks: list, store_vec: list):
         pass
-    def __init_subclass__(cls, storage_name=None, **kwargs):
+    @abstractmethod
+    def query(self, query_vec: list):
+        pass
+    def __init_subclass__(cls, storage_type=None, **kwargs):
         super().__init_subclass__(**kwargs)
-        cls.storage_name = storage_name
-        Storer.registry[storage_name] = cls
+        cls.storage_name = storage_type
+        Storer.registry[storage_type] = cls
 

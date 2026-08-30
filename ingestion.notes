@@ -1,0 +1,14 @@
+
+ingestion_pipeline.py
+        │
+        │ config
+        ▼
+     Document
+        │
+        ├── Loader
+        ├── Parser
+        ├── Preprocessor
+        ├── Chunker
+        ├── Embedder
+        └── Storer
+

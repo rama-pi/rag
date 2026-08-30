@@ -1,0 +1,10 @@
+
+supported models:
+----------------
+Ollama
+│
+├── llama3.2
+├── qwen3
+├── deepseek-r1
+├── nomic-embed-text   ← embedding model
+└── ...

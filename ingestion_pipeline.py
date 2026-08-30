@@ -11,6 +11,8 @@ from framework.base_classes import Document
 config = {
     "wanted_model"     : "llama3.2",
     "embed_model"      : "nomic-embed-text",
+    "storage_type"     : "sqlite",
+    "storage_name"     : "rag_collection.db",
     "wanted_mode"      : "stream",
     "history_file"     : "history.json",
     "conversation_size": 10, # limit to smaller than models context window size
@@ -18,8 +20,6 @@ config = {
     "loader_type"      : "pdf",
     "parser_type"      : "pdf",
     "chunker_type"     : "recursive",
-
-
 }
 
 def load_config():
@@ -45,12 +45,15 @@ def load_config():
 #user / Composition Root / Main
 def main():
     #discover plugins
+    discover("plugins/models")
     discover("plugins/documents/")
     discover("plugins/loaders/")
     discover("plugins/parsers/")
+    discover("plugins/preprocessors")
     discover("plugins/chunkers/")
     discover("plugins/embedders/")
     discover("plugins/storers/")
+    discover("plugins/retrievers")
 
     load_config()
 
@@ -67,7 +70,10 @@ def main():
             print(f'Chunk {i}')
             print(c)
             print(len(c), ' ','-' * 40)
-    print(pd.embed(chunks))
+    vecs = pd.embed(chunks)
+    pd.store(chunks, vecs)
+    print(pd.query("The landscape of modern technology changed permanently"))
+
 
 if __name__ == "__main__":
     main()
