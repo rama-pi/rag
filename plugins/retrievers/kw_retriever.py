@@ -1,9 +1,5 @@
 from abc import ABC, abstractmethod
 
-'''
-from retriever import Retriever
-'''
-
 from framework.base_classes import Retriever
 from framework.helpers import remove_unwanted
 

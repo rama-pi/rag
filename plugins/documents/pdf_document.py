@@ -41,4 +41,6 @@ class PdfDocument(Document, document_type='pdf'):
                 *q_v.embeddings[0]
                 )
         return self.storer.query(q_v)
+    def preprocess(self, chunk: str):
+        return self.preprocessor.preprocess(chunk)
 

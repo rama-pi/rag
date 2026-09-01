@@ -22,10 +22,16 @@ ignore_words = {
         }
 
 def remove_unwanted(past_q, curr_q):
+    # normalize whitespaces
+    past_q = " ".join(past_q.split())
+    curr_q = " ".join(curr_q.split())
+    # lowercase, remove punctuation
     past_q_w = {w.strip(string.punctuation) for w in past_q.lower().split()}
     curr_q_w = {w.strip(string.punctuation) for w in curr_q.lower().split()}
+    # remove stop words
     past_q_w = {w for w in past_q_w if w not in ignore_words}
     curr_q_w = {w for w in curr_q_w if w not in ignore_words}
+    # return lists of words
     return (past_q_w, curr_q_w)
 
 """

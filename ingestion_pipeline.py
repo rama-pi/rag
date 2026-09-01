@@ -5,7 +5,7 @@ from pathlib import Path
 import importlib
 
 
-from framework.helpers import remove_unwanted, discover
+from framework.helpers import discover
 from framework.base_classes import Document
 
 config = {
@@ -20,6 +20,7 @@ config = {
     "loader_type"      : "pdf",
     "parser_type"      : "pdf",
     "chunker_type"     : "recursive",
+    "preprocessor_type": "preprocess",
 }
 
 def load_config():
@@ -58,18 +59,9 @@ def main():
     load_config()
 
     pd = Document.open("sample_chunking_text.pdf", config)
-    pd.dump_pages()
-    pd.dump_words(page=0)
-    pd.dump_lines(page=0)
-    pd.dump_paras(page=0)
     paras = pd.parse_paras(page=0)
     chunks = pd.chunk(paras[-1])
-    for para in paras:
-        chunks = pd.chunk(para)
-        for i,c in enumerate(chunks,1):
-            print(f'Chunk {i}')
-            print(c)
-            print(len(c), ' ','-' * 40)
+    chunks = [pd.preprocess(chunk) for chunk in chunks]
     vecs = pd.embed(chunks)
     pd.store(chunks, vecs)
     closest_chunks = pd.query("The landscape of modern technology changed permanently")
@@ -78,5 +70,3 @@ def main():
 
 if __name__ == "__main__":
     main()
-
-

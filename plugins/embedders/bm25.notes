@@ -1,0 +1,218 @@
+BM25 (Best Matching 25) is a classic text-ranking algorithm used by search engines to estimate the relevance of a document to a given 
+user query. It is the gold standard for keyword-based search (sparse retrieval).Instead of understanding the deep meaning of words 
+like a vector embedding does, BM25 looks at exact keyword matches using ,
+
+two core smart concepts:
+
+1. The Core Mechanics
+ - Term Frequency (TF) with Saturation: It counts how many times a query word appears in a document. However, it applies a "saturation" 
+   limit. Seeing a keyword 2 times is much better than 1 time, but seeing it 20 times is not 10 times better than seeing it 2 times.
+ - Inverse Document Frequency (IDF): It penalizes common words. If your query is "the database design", BM25 gives very little weight to 
+   "the", medium weight to "database", and high weight to "design" because "design" is rarer across the whole dataset
+ - Document Length Normalization: It penalizes extremely long documents. A short document containing your keyword 3 times is considered 
+   much more relevant than a massive 100-page document containing your keyword 3 times.
+
+🔄 BM25 vs. Vector Embeddings (Ollama/BGE)
+In modern learning architectures, BM25 and Vector Search are often used together because they have opposite, complementary strengths:
+
+Feature             | BM25 (Keyword Search)                | Vector Search (Semantic Search)      |
+--------------------|--------------------------------------|--------------------------------------|
+How it finds data   | Exact keyword matching               | Conceptual/Meaning matching          |
+Handles typos?Poorly| (needs exact letters)                | Excellent (understands context)      |
+Handles jargon/IDs? | Perfectly (finds exact part numbers) | Poorly (obscure IDs look like noise) |
+Computational cost  | Extremely cheap and fast             |Heavy (requires GP                    |
+
+
+BM25 finds text that contains the important words from the query, and scores how well each document/chunk matches those words.
+
+Ex:
+
+                   BM25
+                    │
+             query: "fox deer"
+                    │
+          ┌─────────┴─────────┐
+          ↓                   ↓
+     query terms          all chunks
+                              │
+                    ┌─────────┼─────────┐
+                    ↓         ↓         ↓
+                  Chunk 1   Chunk 2   Chunk 3
+                    │         │         │
+                 score      score      score
+                    │         │         │
+                    └─────────┼─────────┘
+                              ↓
+                         ranked results
+
+our vector search - Which chunk has the most similar meaning?
+BM25 asks something different - Which chunk contains the important words from my query?
+
+
+BM25 score
+   │
+   ├── TF
+   │     └── does the term occur, and how often?
+   │           ↳ diminishing returns
+   │
+   ├── IDF
+   │     └── how rare is the term across chunks?
+   │
+   └── document-length normalization
+         └── don't unfairly favor long chunks
+
+first few occurrences of a vocab -
+        → useful increase
+
+many more occurrences of a vocab -
+        → progressively smaller increase
+          i.e instead of using TF as a score (aka weight), a normalized scope is determined.
+              this calculation based on IDF, TF, length of doc in words, average lenght of doc, 2 hyper parameters
+
+                 BM25 score (aka weight)
+                     │
+        ┌────────────┼────────────┐
+        ↓            ↓            ↓
+       IDF          TF       length normalization
+        │            │            │
+   rarity across   frequency   this doc vs
+   all documents   in this doc  average doc
+                     │
+                     ↓
+              2 hyperparameters
+
+
+                 Query
+                   │
+          ┌────────┴────────┐
+          ▼                 ▼
+      Vector              BM25
+          │                 │
+       top-k              top-k
+          │                 │
+          └────────┬────────┘
+                   ▼
+              combine/rank
+                   │
+                   ▼
+             final chunks
+                   │
+                   ▼
+                  LLM
+
+
+PDF
+ │
+ ▼
+PdfDocument
+ │
+ ├── pages/chunks
+ ├── document metadata
+ │
+ └── BM25
+       │
+       └── builds/indexes sparse term information
+                    │
+                    ▼
+                 Storer
+                    │
+             ┌──────┼──────┐
+             │      │      │
+          chunk_id text  doc_id/meta
+
+query
+ │
+ ▼
+BM25
+ │
+ │ compare query terms against indexed chunks
+ ▼
+matching chunk_ids + BM25 scores
+ │
+ ▼
+Storer
+ │
+ ▼
+chunk text + document metadata
+
+then;
+                    query
+                      │
+             ┌────────┴────────┐
+             ▼                 ▼
+          Embedder           BM25
+             │                 │
+        query vector       query terms
+             │                 │
+             ▼                 ▼
+       Vector Storer        BM25 Storer
+             │                 │
+             └────────┬────────┘
+                      ▼
+                 combine/rank
+                      ▼
+              chunks + doc metadata
+                      ▼
+                     LLM
+
+2 approaches with documents , ex pdf:
+
+Approach A: The "Chunk-as-a-Doc" Trick (Most Common)
+In this setup, you trick BM25. You tell the database that every paragraph is its own independent file.
+- The Global Vocabulary: The database treats your 2 handbooks as 1,000 mini-documents.
+- The Math: If a keyword appears heavily in one paragraph but nowhere else in the 1,000 paragraphs, BM25 gives that paragraph a 
+  massive score.
+- The Delivery: The database returns the exact winning paragraph, and you send it straight to the LLM.
+
+Approach B: Two-Stage Hierarchical Retrieval 
+- Stage 1 (File Level): You run your query across the BM25 index of the entire PDF files. BM25 points its finger and says: "Based 
+  on the vocabulary, Employee_Handbook_2025.pdf has the highest relevance score."
+- Stage 2 (Chunk Level): Now that you have isolated the correct file, you switch over to your vector database (sqlite-vec). 
+  You tell SQLite: "Only look at the text chunks that belong to Employee_Handbook_2025.pdf. Find the 3 chunks inside this file that 
+  are geometrically closest to the user's query vector."
+- The Delivery: You grab those specific chunks from the winning file and feed them to the LLM.
+
+
+chunk
+ ├──► dense Embedder ──► dense vector ──┐
+ │                                      │
+ └──► BM25 ────────────► sparse data ───┤
+                                        ▼
+                                      Storer
+
+
+
+
+🚀 Why it matters for your RAG Pipeline
+In advanced learning setups, developers combine BM25 and SQLite-vec to create a Hybrid Search system.
+
+When a user searches for something, you run the query through BM25 and your Ollama vector index simultaneously. You then merge the 
+results using a technique called Reciprocal Rank Fusion (RRF). This gives you the ultimate search pipeline: it catches exact keyword 
+serial numbers while simultaneously understanding abstract human concepts!
+----------------------------------------------------------------------------------------------------------------------------------------------
+
+All docs doesn't have to SAME vocab, hence this might change the vector # of dimensions be different from one doc to other, bad:
+
+The Dimension Count: The number of dimensions equals the total size of your entire dataset's dictionary (vocabulary).
+
+meaning all docs will have same number of dimensions, irrespective of their vocab count. But drawback vocab count of a doc could be
+far smaller than than dataset's dictionary (vocabulary) count resulting in many zero's in vector for those vocab.
+
+Details:
+- The Dimension Count: The number of dimensions equals the total size of your entire dataset's dictionary (vocabulary). If your 
+  collection of documents uses 50,000 unique words across all text, every single sparse vector has exactly 50,000 dimensions.
+- Why it looks variable: For any single document, 99.9% of those dimensions are completely empty (0). If a document only contains 
+  the words "Python" and "SQLite", its vector is just a massive string of zeros, with actual BM25 score numbers sitting only at the 
+  precise index slots for "Python" and "SQLite".
+
+as to optimize the vector storage: uses Inverted Index
+
+- The Reality: When BM25 runs a query, it doesn't compare two geometric arrows in space like sqlite-vec does.
+- The Math: It simply looks up the query words in the inverted index list, grabs the documents containing them, and calculates the 
+  BM25 score on the fly using only those overlapping words.
+
+Summary:
+- Dense Vectors (Ollama/BGE): Every document is a fixed array of decimals (e.g., exactly 768 float numbers). Meaning is packed tightly.
+- Sparse Vectors (BM25): Every document conceptually shares a massive, global vocabulary grid. However, its physical storage length 
+  varies completely depending on how many unique words are inside that specific document.
+

@@ -41,6 +41,7 @@ class Document(ABC):
         self.parser = None
         self.chunker = None
         self.embedder = None
+        self.preprocessor = None
         self.pages = []
 
         # Loader
@@ -84,6 +85,14 @@ class Document(ABC):
         else:
             raise RuntimeError(
                     f"No storer plugin registered as {storage_type}"
+                    )
+        # preprocessor
+        preprocessor_type = config["preprocessor_type"]
+        if PreProcessor.registry[preprocessor_type]:
+            self.preprocessor = PreProcessor.registry[preprocessor_type](preprocessor_type=preprocessor_type)
+        else:
+            raise RuntimeError(
+                    f"No preprocessor plugin registered as {preprocessor_type}"
                     )
 
     @classmethod
@@ -133,6 +142,8 @@ class Document(ABC):
     def store(self, chunks: list, store_vecs: list):
         pass
     def query(self, chunk: str):
+        pass
+    def preprocess(self, chunk: str):
         pass
 
     def __init_subclass__(cls, document_type=None, **kwargs):
@@ -216,13 +227,12 @@ class PreProcessor(ABC):
     registry = {}
 
     @abstractmethod
-    def load(self, segment: str):
+    def preprocess(self, segment: str):
         pass
     def __init_subclass__(cls, preprocessor_type=None, **kwargs):
         super().__init_subclass__(**kwargs)
-        cls.loader_type = preocesor_type
+        cls.loader_type = preprocessor_type
         PreProcessor.registry[preprocessor_type] = cls
-
 
 class Retriever(ABC):
     registry = {}

@@ -9,5 +9,6 @@
     "search_type": "re",
     "loader_type": "pdf",
     "parser_type": "pdf",
-    "chunker_type": "recursive"
+    "chunker_type": "recursive",
+    "preprocessor_type": "preprocess"
 }
