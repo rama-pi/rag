@@ -40,7 +40,7 @@ class Document(ABC):
         self.loader = None
         self.parser = None
         self.chunker = None
-        self.embedder = None
+        self.embedders = {}
         self.preprocessor = None
         self.pages = []
 
@@ -70,13 +70,20 @@ class Document(ABC):
             raise RuntimeError(
                     f"No chunker plugin registered as {chunker_type}"
                     )
-        # Embedder
-        embed_model = config['embed_model']
-        if Embedder.registry[embed_model]:
-            self.embedder = Embedder.registry[embed_model](embed_model=embed_model)
+        # Embedders
+        engine = config["sparse_embedder"]["engine"]
+        if Embedder.registry[engine]:
+            self.embedders[engine] = Embedder.registry[engine](engine)
         else:
             raise RuntimeError(
-                    f"No embedder registered as {embed_model}"
+                    f"No embedder registered as {engine}"
+                    )
+        model_name = config["dense_embedder"]["model_name"]
+        if Embedder.registry[model_name]:
+            self.embedders[model_name] = Embedder.registry[model_name](model_name)
+        else:
+            raise RuntimeError(
+                    f"No embedder registered as {model_name}"
                     )
         # Storer
         storage_type = config['storage_type']

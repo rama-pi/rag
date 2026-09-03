@@ -1,6 +1,16 @@
 {
     "wanted_model": "llama3.2",
-    "embed_model": "nomic-embed-text",
+    "sparse_embedder": {
+        "engine": "BM25",
+        "parameters": {
+            "k1": 1.2,
+            "b": 0.75
+        }
+    },
+    "dense_embedder": {
+        "model_name": "nomic-embed-text",
+        "dimensions": 768
+    },
     "storage_type": "sqlite",
     "storage_name": "rag_collection.db",
     "wanted_mode": "stream",

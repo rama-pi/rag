@@ -10,12 +10,22 @@ from framework.base_classes import Document
 
 config = {
     "wanted_model"     : "llama3.2",
-    "embed_model"      : "nomic-embed-text",
+    "sparse_embedder": {
+        "engine": "BM25",
+        "parameters": {
+            "k1": 1.2,
+            "b": 0.75
+            }
+        },
+    "dense_embedder": {
+        "model_name": "nomic-embed-text",
+        "dimensions": 768
+        },
     "storage_type"     : "sqlite",
     "storage_name"     : "rag_collection.db",
     "wanted_mode"      : "stream",
     "history_file"     : "history.json",
-    "conversation_size": 10, # limit to smaller than models context window size
+    "conversation_size": 10,                # limit to smaller than models context window size
     "search_type"      : "re",
     "loader_type"      : "pdf",
     "parser_type"      : "pdf",
@@ -63,9 +73,10 @@ def main():
     chunks = pd.chunk(paras[-1])
     chunks = [pd.preprocess(chunk) for chunk in chunks]
     vecs = pd.embed(chunks)
-    pd.store(chunks, vecs)
-    closest_chunks = pd.query("The landscape of modern technology changed permanently")
-    print(closest_chunks)
+    print(vecs)
+    #pd.store(chunks, vecs)
+    #closest_chunks = pd.query("The landscape of modern technology changed permanently")
+    #print(closest_chunks)
 
 
 if __name__ == "__main__":
