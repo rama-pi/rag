@@ -35,6 +35,8 @@ class PdfDocument(Document, document_type='pdf'):
         for name,embedder in self.embedders.items():
             embeddings[name] = embedder.embed(chunks)
         return embeddings
+    def store_document(self, document_name: str):
+        return self.storer.store_document(document_name)
     def store(self, chunks: list, store_vecs: list):
         return self.storer.store(chunks, store_vecs)
     def query(self, chunk: str):

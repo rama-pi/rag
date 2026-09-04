@@ -20,6 +20,16 @@ class SQLiteStorer(Storer, storage_type="sqlite"):
         self.db_conn.enable_load_extension(False)
         self.cur = self.db_conn.cursor()
 
+        # tables for doc, chunk, embeddings
+        self.cur.execute(
+                """
+                CREATE TABLE IF NOT EXISTS documents
+                (
+                document_id INTEGER PRIMARY KEY,
+                filename TEXT
+                )
+                """
+                )
         self.cur.execute(
                 """
                 CREATE TABLE IF NOT EXISTS chunks 
@@ -37,6 +47,19 @@ class SQLiteStorer(Storer, storage_type="sqlite"):
                 """
                 )
 
+    def store_document(self, document_name: str):
+        with self.db_conn:
+            row = self.cur.execute(
+            """
+            INSERT INTO documents (filename)
+            VALUES (?)
+            RETURNING document_id
+            """,
+            (document_name,)
+            ).fetchone()
+        document_id = row[0]
+        return document_id
+    
     def store(self, chunks: list, store_vecs: list):
         with self.db_conn:
             for i in range(len(chunks)):

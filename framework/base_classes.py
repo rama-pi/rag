@@ -145,10 +145,11 @@ class Document(ABC):
     @abstractmethod
     def embed(self, chunks: list):
         pass
-    @abstractmethod
     def store(self, chunks: list, store_vecs: list):
         pass
     def query(self, chunk: str):
+        pass
+    def store_document(self, document_name: str):
         pass
     def preprocess(self, chunk: str):
         pass
@@ -271,6 +272,9 @@ class Storer(ABC):
         pass
     @abstractmethod
     def query(self, query_vec: list):
+        pass
+    @abstractmethod
+    def store_document(self, document_name: str):
         pass
     def __init_subclass__(cls, storage_type=None, **kwargs):
         super().__init_subclass__(**kwargs)

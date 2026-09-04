@@ -71,11 +71,12 @@ def ingest():
         full_path = os.path.join(base_path, entry)
         if os.path.isfile(full_path):
             doc = Document.open(full_path, config)
+            doc_id = doc.store_document(full_path)
             paras = doc.parse_paras(page=0)
             chunks = doc.chunk(paras[-1])
             chunks = [doc.preprocess(chunk) for chunk in chunks]
             vecs = doc.embed(chunks)
-            docs.append({'doc': doc, 'id': 0, 'name': full_path})
+            docs.append({'doc': doc, 'id': doc_id, 'name': full_path})
             print(f"-------{full_path}-----")
             print(vecs.keys())
     print(docs)
