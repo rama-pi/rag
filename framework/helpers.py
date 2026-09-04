@@ -63,7 +63,6 @@ def discover(plugin_subfolder: str):
 
         try:
             print(f"[Framework] Dynamically loading plugin: {full_module_name}")
-            # The python equivalent of a dynamic dlopen()
             importlib.import_module(full_module_name)
         except Exception as e:
             print(f"[Framework Error] Failed to load plugin {full_module_name}: {e}")

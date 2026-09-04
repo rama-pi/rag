@@ -1,4 +1,9 @@
 
+Ingestion:
+In AI, ingestion (or data ingestion) is the intake phase. It is the very first step where raw, messy real-world data is collected, 
+cleaned, structured, and imported into your system so an AI model can actually read and use it.
+
+
 ingestion_pipeline.py
         │
         │ config
@@ -11,4 +16,59 @@ ingestion_pipeline.py
         ├── Chunker
         ├── Embedder
         └── Storer
+
+ML pipeline:
+Raw Data Sources  ➡️  Data Wrangling  ➡️  Data Cleaning  ➡️  Feature Engineering  ➡️  Model Ready Data
+
+1. Data Wrangling (The Structuring Phase)
+   Data wrangling (sometimes called data munging) focuses on the form and structure of your data. 
+   It is the process of gathering data from multiple sources and reshaping it into a workable format.Combining Data: Running joins, 
+   merges, or concatenations across different databases or CSV files.Reshaping: Pivoting tables from a "wide" format to a "long" 
+   format or aggregation (e.g., grouping hourly temperature data into daily averages).Type Casting: Ensuring columns have the 
+   correct data types (e.g., turning a text column containing numbers into actual numeric float types).
+
+   1⃣️ Combining Data: Running joins, merges, or concatenations across different databases or CSV files.
+   2⃣️ Reshaping: Pivoting tables from a "wide" format to a "long" format or aggregation (e.g., grouping hourly temperature data 
+     into daily averages).
+   3⃣️ Type Casting: Ensuring columns have the correct data types (e.g., turning a text column containing numbers into actual 
+     numeric float types).
+
+2. Data Cleaning (The Quality Phase)
+   Data cleaning focuses on the health and accuracy of the data within that structure. It fixes errors, omissions, and noise.
+
+   1⃣️ Handling Missing Values: Deciding whether to drop rows with missing information or fill them in (imputation) using the mean, 
+     median, or a placeholder value.
+   2⃣️ Deduplication: Finding and removing identical rows or duplicate records.
+   3⃣️ Outlier Removal: Identifying anomalies (like a human age column showing 150 or -5) and correcting or filtering them out.
+   4⃣️ Structural Fixes: Fixing typos, standardization (like forcing all country names to be lowercase uppercase codes like US 
+     instead of usa or United States), and whitespace normalization.
+
+3. Feature Engineering & Preprocessing (The Math Phase)
+   Once the data is clean and structured, it must be converted into numerical values that ML models can ingest.
+
+   1⃣️ Encoding Categorical Data: Turning text classes (like ["Red", "Blue", "Green"]) into numbers using techniques like One-Hot 
+     Encoding.
+   2⃣️ Scaling & Normalization: Shrinking numeric ranges (e.g., mapping a salary column ranging from $30k–$200k down to a uniform 
+     decimal range between 0 and 1) so large numbers don't skew the model's math.
+
+🔄 Direct Comparison: ML vs. RAG Pipeline
+   One caveat: not force the correspondence too literally. In ML, feature engineering creates features for the model; 
+   in RAG, embeddings are usually created after the document has been parsed/chunked/preprocessed. So they're analogous pipeline 
+   stages, not exact equivalents.
+
+   RAG Pipeline           |  ML Pipeline Equivalent    | Why it belongs there
+   -----------------------|---------------------|---------------------
+   Extracting text        | Data Wrangling      | You are changing the physical structure from
+   from a PDF file        |                     | a file format to an accessible raw string
+   -----------------------|---------------------|---------------------------------------------
+   Normalizing whitespace | Data Cleaning       | You are deleting formatting errors and
+   / stripping tabs       |                     | cleaning up noise in the text.
+   -----------------------|---------------------|---------------------------------------------
+   Chunking text into 500~| Data reshaping      | You are slicing the global data array into 
+   word blocks            |                     | uniformly structured rows.
+   -----------------------|---------------------|---------------------------------------------
+   Generating an embedding| Feature Eng         | You are converting clean human text into
+   via a emedding model   |                     | numerical cooridinates (vectors)
+   -----------------------|---------------------|---------------------------------------------
+
 

@@ -31,6 +31,7 @@ config = {
     "parser_type"      : "pdf",
     "chunker_type"     : "recursive",
     "preprocessor_type": "preprocess",
+    "ingest_docs"      : "./ingest_docs"
 }
 
 def load_config():
@@ -51,6 +52,30 @@ def load_config():
         print(f"An error occurred:")
         sys.exit(1)
 
+def ingest():
+    ingest_subfolder = "./ingestion_docs"
+    # 1. Convert the folder path to a proper path object relative to project root
+    base_path = Path(ingest_subfolder)
+    if not base_path.exists():
+        print(f"[Framework Warning] Ingest directory {ingest_subfolder} not found.")
+        return
+
+    # 3. Iterate over every entry in the directory
+    for entry in os.listdir(base_path):
+        # Skip hidden files (like .DS_Store), private files (__init__.py), and directories
+        if entry.startswith('.') or entry.startswith('__') or not entry.endswith('.pdf'):
+            continue
+        full_path = os.path.join(base_path, entry)
+        if os.path.isfile(full_path):
+            doc = Document.open(full_path, config)
+            paras = doc.parse_paras(page=0)
+            chunks = doc.chunk(paras[-1])
+            chunks = [doc.preprocess(chunk) for chunk in chunks]
+            vecs = doc.embed(chunks)
+            print(f"-------{full_path}-----")
+            print(vecs.keys())
+    return
+
 
 # Main
 #user / Composition Root / Main
@@ -68,16 +93,7 @@ def main():
 
     load_config()
 
-    pd = Document.open("sample_chunking_text.pdf", config)
-    paras = pd.parse_paras(page=0)
-    chunks = pd.chunk(paras[-1])
-    chunks = [pd.preprocess(chunk) for chunk in chunks]
-    vecs = pd.embed(chunks)
-    print(vecs)
-    #pd.store(chunks, vecs)
-    #closest_chunks = pd.query("The landscape of modern technology changed permanently")
-    #print(closest_chunks)
-
+    ingest()
 
 if __name__ == "__main__":
     main()

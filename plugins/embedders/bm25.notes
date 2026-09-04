@@ -156,26 +156,30 @@ then;
 
 above pic is 2 embedders in use.
 1. The Two-Engine Architecture (What you are building!)
-   This is the most popular approach. Instead of using one unified AI model, you use two separate technologies that cover each other’s blind spots.
+   This is the most popular approach. Instead of using one unified AI model, you use two separate technologies that cover each other’s 
+   blind spots.
 
-   - The Sparse Engine: Uses classical math like BM25 (or TF-IDF). It doesn't use a machine learning model; it just indexes text characters natively inside 
-     databases like SQLite FTS5. It acts as a sparse vector space based entirely on ✅ vocabulary.
-   - The Dense Engine: Uses a neural network transformer model like ✅ Ollama (Nomic/All-MiniLM) or OpenAI to generate continuous floating-point coordinates 
-     that capture human intent and meaning.
+   - The Sparse Engine: Uses classical math like BM25 (or TF-IDF). It doesn't use a machine learning model; it just indexes text characters 
+     natively inside databases like SQLite FTS5. It acts as a sparse vector space based entirely on ✅ vocabulary.
+   - The Dense Engine: Uses a neural network transformer model like ✅ Ollama (Nomic/All-MiniLM) or OpenAI to generate continuous 
+     floating-point coordinates that capture human intent and meaning.
 
    Both run in parallel, and their rank scores are combined later via Reciprocal Rank Fusion ✅ (RRF)
 
 But,
-As the demand for hybrid search exploded, AI researchers realized that running two separate systems creates a lot of extra software engineering complexity. 
-This led to the creation of ✅ Unified Hybrid Embedding Models ✅.
+As the demand for hybrid search exploded, AI researchers realized that running two separate systems creates a lot of extra software 
+engineering complexity.  This led to the creation of ✅ Unified Hybrid Embedding Models ✅.
 
-Models like ✅ bge-m3 are explicitly designed to be all-in-one hybrid embedders. When you pass a single chunk of text to a model like BGE-M3, its neural 
-network performs a multi-task forward pass and simultaneously outputs three things at once:
+Models like ✅ bge-m3 are explicitly designed to be all-in-one hybrid embedders. When you pass a single chunk of text to a model 
+like BGE-M3, its neural network performs a multi-task forward pass and simultaneously outputs three things at once:
 
   1⃣️A Dense Vector: For semantic similarity matching
   2⃣️A Sparse Vector: An AI-optimized alternative to BM25 that figures out which exact keywords are the most critical.
   3⃣️A ColBERT Vector: A token-level embedding for late-interaction ranking
 
+
+RRF:
+RRFscore(d)=r∈R∑​k+rankr​(d)1​
 
 2 approaches with documents , ex pdf:
 
