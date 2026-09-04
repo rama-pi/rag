@@ -34,6 +34,9 @@ config = {
     "ingest_docs"      : "./ingest_docs"
 }
 
+# keep opened docs  their id, name, onj
+docs = []
+
 def load_config():
     global config
     try:
@@ -72,8 +75,10 @@ def ingest():
             chunks = doc.chunk(paras[-1])
             chunks = [doc.preprocess(chunk) for chunk in chunks]
             vecs = doc.embed(chunks)
+            docs.append({'doc': doc, 'id': 0, 'name': full_path})
             print(f"-------{full_path}-----")
             print(vecs.keys())
+    print(docs)
     return
 
 
