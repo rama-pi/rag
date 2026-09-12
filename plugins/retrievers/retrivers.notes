@@ -1,10 +1,65 @@
-A RAG (Retrieval-Augmented Generation) retriever is the foundational architecture layer responsible for searching an external 
- knowledge base and fetching the most relevant data chunks to augment an LLM's prompt. While a basic vector store answers “which 
- text vectors are numerically closest to this query?”, a true retriever is optimized to answer the strategic question: “what 
- specific context should the LLM see to give the highest-quality answer?” 
 
-Core Mechanics of RAG RetrievalThe pipeline relies on converting unstructured data into a structured search ecosystem before 
- a query is even executed:
+Core Mechanics of RAG Retrieval:
+ The pipeline relies on converting unstructured data into a structured search ecosystem before a query is even executed:
+
+Vector retrieval / similarity measurements:
+    ________
+   |
+   ├── Euclidean distance
+   |   Measures the straight-line distance between two vectors in multi-dimensional space. Smaller distance means more similar.
+   |
+   |   Point A  ●────────────● Point B
+   |            straight-line distance
+   |
+   |              n
+   |   d(A,B) = √ Σ (Aᵢ − Bᵢ)²
+   |              i=1
+   |
+   ├── Cosine similarity
+   |   Measures how similar the directions of two vectors are, regardless of their length/magnitude.
+   |
+   |   Similar direction
+   |      ↗ A
+   |     ↗ B
+   |   High cosine similarity
+   |   Two vectors can have different lengths but point in nearly the same direction.
+   |
+   |                  n
+   |                  Σ AᵢBᵢ
+   |                  i=1
+   |   cos(A,B) = ─────────────────
+   |               ||A|| × ||B||
+   |
+   ├── Inner product
+   |   Measures similarity by combining both vector direction and vector magnitude. Larger inner product generally means greater similarity.
+   |   Unlike cosine similarity, vector length matters.
+   |
+   |   Inner product:
+   |         direction
+   |           +
+   |         magnitude 
+   |     matter.
+   |
+   |           n
+   |   A · B = Σ AᵢBᵢ
+   |           i=1
+   |
+   ├── Hamming distance
+   |   Counts how many corresponding bits differ between two binary vectors. Smaller distance means more similar.
+   |
+   |             n
+   |   dH(A,B) = Σ [Aᵢ ≠ Bᵢ]
+   |             i=1
+   |   where each difference contributes 1.
+   |
+   └── Jaccard similarity
+   |   Measures similarity between two sets by comparing how many items they share with the total number of unique items across both sets.
+   |
+   |              |A ∩ B|
+   |   J(A,B) = ───────────
+   |              |A ∪ B|
+   |______
+
 
 Primary Types of Retrievers:
 

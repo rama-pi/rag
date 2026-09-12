@@ -1,6 +1,27 @@
 
+stores plugin
+	│
+	├── How embeddings/vectors are stored
+	├── Vector store
+	├── Document store
+	├── Index store
+	├── Flat index
+	├── IVF
+	├── PQ
+	├── SQ
+	└── Other indexing structures
 
-Indexing methods:
+Store/index = how do we organize vectors for efficient searching?
+
+High-dimensional space: 
+ An N-dimensional mathematical space where N is large. An embedding with N numerical components can be viewed as a point/vector in 
+ an N-dimensional space.
+
+
+Not all Indexing types support all search types.
+
+Vector Indexing methods:
+-----------------------
   1⃣️ FLAT
   2⃣️ IVF
   3⃣️ HNSV
@@ -9,7 +30,7 @@ Indexing methods:
   6⃣️ QUANTIZATION INDEXING
   7⃣️ HASHING
 
-IVF:
+1⃣️ IVF:
   IVF speeds up vector search by dividing vectors into clusters. During a search, the query is compared first with the cluster 
   representatives/centroid, and only the vectors inside the most relevant clusters are searched. Then rank based on representatives/
   centroid compare. Pick top K then compare query vector with each vector in this top K.
@@ -56,10 +77,12 @@ IVF:
 
   	Then calculate the actual similarity against those vectors and return the closest ones.
 
-  'inverted index' means , is maintaining a doc list for a given word, listing all doc's that contain that word.
+  'inverted index' means, is maintaining a doc list for a given word, listing all doc's that contain that word.
    when searching docs for a given word, only need to look-up related doc's from this list.
 
-QUANTIZATION INDEXING
+  IVF (Inverted File Index) clusters vectors and searches only the clusters closest to the query, rather than comparing the query against 
+  every vector. The number of clusters searched controls the speed-versus-accuracy trade-off.
+2⃣️ QUANTIZATION INDEXING
   1⃣️ scalar quantization (SQ) - Experimental coding Difficulty rating: 3–4/10
     Each floating-point value in a vector is independently converted to a smaller integer representation. 
     This reduces storage and can speed up vector comparison, but is lossy because the original floating-point values cannot be recovered 
@@ -139,4 +162,8 @@ QUANTIZATION INDEXING
   - Optimized product quantization (OPQ)
 
   space and computation optimization by compressing vector data.
-  
+3⃣️ Graph indexing
+4⃣️ Hashing indexing
+  Hash functions to map similar high-dimensional vectors into same Hash buckets.
+  Search/compare query vector against  only the vectors in the hash bucket that query hash maps to.
+

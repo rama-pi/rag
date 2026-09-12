@@ -1,3 +1,9 @@
+RAG:
+---
+ A RAG (Retrieval-Augmented Generation) retriever is the foundational architecture layer responsible for searching an external
+ knowledge base and fetching the most relevant data chunks to augment an LLM's prompt. While a basic vector store answers “which
+ text vectors are numerically closest to this query?”, a true retriever is optimized to answer the strategic question: “what
+ specific context should the LLM see to give the highest-quality answer?”
 
 
 Pictorial rep of RAG pipeline:
