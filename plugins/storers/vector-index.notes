@@ -1,0 +1,142 @@
+
+
+Indexing methods:
+  1⃣️ FLAT
+  2⃣️ IVF
+  3⃣️ HNSV
+  4⃣️ SPARSED-INVERTED-INDEX
+  5⃣️ GRAPH INDEXING
+  6⃣️ QUANTIZATION INDEXING
+  7⃣️ HASHING
+
+IVF:
+  IVF speeds up vector search by dividing vectors into clusters. During a search, the query is compared first with the cluster 
+  representatives/centroid, and only the vectors inside the most relevant clusters are searched. Then rank based on representatives/
+  centroid compare. Pick top K then compare query vector with each vector in this top K.
+  Ex:
+  	Query
+  	↓
+  	V1 V2 V3 V4 V5 V6 V7 V8 V9 V10 V11 V12
+  	IVF first groups them into clusters:
+                  All vectors
+                     │
+          ┌──────────┼──────────┐
+          ▼          ▼          ▼
+
+       Cluster A   Cluster B   Cluster C
+
+       V1 V3 V7     V2 V5      V4 V6 V8 V9 V10 V11 V12
+
+          ●           ●           ●
+      Centroid A   Centroid B   Centroid C
+
+  	Query arrives:
+   		Query vector
+      		│
+      		▼
+		Compare with cluster centroids
+
+       		Query
+        	│
+   	   ┌────┼────┐
+   	   ▼    ▼    ▼
+
+   	   ●    ●    ●
+   	   A    B    C
+
+   	distance
+    		0.9  0.2  1.4
+  		Cluster B is closest.
+  	So instead of searching all 12 vectors:
+    		V1 V2 V3 V4 V5 V6 V7 V8 V9 V10 V11 V12
+  	we search only:
+    		Cluster B
+		V2
+		V5
+
+  	Then calculate the actual similarity against those vectors and return the closest ones.
+
+  'inverted index' means , is maintaining a doc list for a given word, listing all doc's that contain that word.
+   when searching docs for a given word, only need to look-up related doc's from this list.
+
+QUANTIZATION INDEXING
+  1⃣️ scalar quantization (SQ) - Experimental coding Difficulty rating: 3–4/10
+    Each floating-point value in a vector is independently converted to a smaller integer representation. 
+    This reduces storage and can speed up vector comparison, but is lossy because the original floating-point values cannot be recovered 
+    exactly.
+    ex:
+    original vector:
+    	A = [-0.82, -0.31, 0.14, 0.67, 0.91]
+    	B = [-0.75, -0.28, 0.10, 0.70, 0.88]
+    becomes after quantization
+    	A → [23, 88, 145, 213, 244]
+    	B → [32, 92, 140, 217, 240]
+    The vector database can then perform its comparison using the quantized representations rather than the original float values:
+    Original comparison:
+    	[-0.82, -0.31, 0.14, 0.67, 0.91]
+    	[-0.75, -0.28, 0.10, 0.70, 0.88]
+    versus quantized comparison:
+    	[23, 88, 145, 213, 244]
+    	[32, 92, 140, 217, 240]
+    Query vector
+     	↓
+    	Quantize using same quantization scheme
+     	↓
+    	[24, 89, 146, 214, 243]
+    	Stored vector compare
+     	↓
+    	[23, 88, 145, 213, 244]
+  2⃣️ Product quantization (PQ) - Experimental coding Difficulty rating: 5–6/10
+    PQ compresses vectors by splitting each vector into sub-vectors and representing each sub-vector by the ID of its closest codebook 
+    entry (codeword). codewords. codebook. A codebook contains codewords, each codeword has an index, and PQ stores the indices of the 
+    selected closest codewords instead of storing the original sub-vectors / vector.
+    ex:
+    Original document chunk
+        │
+        ▼
+	Original embedding
+	[0.2, 0.7, ... many numbers ...]
+        │
+        ▼  PQ indices
+	[17, 42]     ← 	compact stored codeword indices 
+			Number of PQ indices
+        			=
+			Number of sub-vectors
+    this above done for all chunks of a doc.
+    During retrieval:
+    User query
+   	│
+   	▼
+	Query embedding
+   	│
+   	▼
+	Build distance lookup tables
+   	│
+   	▼
+	Stored vector [17, 42]
+   	│
+   	├── lookup distance for codeword 17
+   	└── lookup distance for codeword 42
+             │
+             ▼
+       	approximate similarity score
+    Then the vector database does this for many stored vectors:
+	Chunk A → [17, 42] → score 0.91
+	Chunk B → [ 3, 81] → score 0.42
+	Chunk C → [17, 10] → score 0.88
+	Chunk D → [55, 22] → score 0.15
+    
+    Then:
+    Top scores
+   	│
+   	▼
+	Chunk A
+	Chunk C
+	...
+   	│
+   	▼
+	RETRIEVAL of A and/or C chunks.
+  - Optimized product quantization (OPQ)
+
+  space and computation optimization by compressing vector data.
+  

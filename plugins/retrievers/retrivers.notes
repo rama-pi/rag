@@ -1,0 +1,88 @@
+A RAG (Retrieval-Augmented Generation) retriever is the foundational architecture layer responsible for searching an external 
+ knowledge base and fetching the most relevant data chunks to augment an LLM's prompt. While a basic vector store answers “which 
+ text vectors are numerically closest to this query?”, a true retriever is optimized to answer the strategic question: “what 
+ specific context should the LLM see to give the highest-quality answer?” 
+
+Core Mechanics of RAG RetrievalThe pipeline relies on converting unstructured data into a structured search ecosystem before 
+ a query is even executed:
+
+Primary Types of Retrievers:
+
+	Retriever Type     | Mechanism              | Best Used For                | Pros & Cons           |
+	-------------------|------------------------|------------------------------|-----------------------|
+	Sparse             | Matches exact text     | Finding rare product IDs,    |❇️ Fast and highly      |
+	(keyword)          | tokens and terms using | specific serial codes, or    |  precise for explicit |
+	                   | algorithms like BM25.  | highly technical             |  matches.             |
+	                   |                        | nomenclature                 |⛔Fails on             |
+	                   |                        |                              |  synonyms, intent, and|
+	                   |                        |                              |  semantic context.    |
+	-------------------|------------------------|------------------------------|-----------------------|
+	Dense              | Compares vector        | Understanding user intent,   |❇️ Excellent at         |
+	(semantic)         | embeddings using       | concept matching, and        |  parsing conceptual   |
+	                   | distance metrics (e.g.,| conversational queries.      |  context and          |
+	                   | Cosine Similarity).    |                              |  synonyms.            |
+	                   |                        |                              |⛔Can miss specific    |
+	                   |                        |                              |  exact keyword        |
+	                   |                        |                              |  tokens.              |
+	-------------------|------------------------|------------------------------|-----------------------|
+	Hybrid             | Executes sparse and    | Production enterprise RAG    |❇️ Delivers the         |
+	(Ensemble)         | dense searches in      | systems, specialized legal,  |  highest collective   |
+	                   | parallel, then blends  | or medical spaces.           |  recall and precision |
+	                   | results.               |                              |  metrics.             |
+	                   |                        |                              |⛔Requires complex     |
+	                   |                        |                              |  score fusion         |
+	                   |                        |                              |  score fusion         |
+	                   |                        |                              |  algorithms.          |
+	-------------------|------------------------|------------------------------|-----------------------|
+
+Advanced Strategic Paradigms:
+	To scale beyond basic similarities, advanced RAG frameworks employ explicit routing abstractions to maximize information gain.
+
+       1⃣️ Multi-Query Retrieval: Uses a lightweight LLM to rewrite a single user query into multiple variations from different semantic 
+         angles, executing all of them to capture a broader net of documents.
+       2⃣️ Self-Querying: Translates a natural language question into structured filter parameters (e.g., isolating metadata tags like 
+         date > 2025 or author = 'X') before searching the underlying vector space.
+       3⃣️ Reciprocal Rank Fusion (RRF) & Re-ranking: Instead of trusting raw vector proximity scores, an external re-ranking model 
+         (such as a Cross-Encoder) evaluates the top results, rearranging them based on conditional information priority before the 
+         context reaches the generator.
+
+
+Knowledge graph-enhanced retrievers 
+  (often referred to as Graph RAG) combine vector databases with structured knowledge graphs to capture deep connections, multi-hop 
+  reasoning, and holistic context that standard vector search misses. While a vector retriever treats information as isolated text 
+  snippets, a graph retriever models data as explicit entities (nodes) and the meaningful relationships (edges) connecting them.
+  Ex:
+  ----
+  John
+  │
+  └── worked on
+       │
+       ▼
+   Project X
+       │
+       └── discontinued
+               │
+               ▼
+             2023
+
+  Now to answer a question like 'why did john's role end".
+  
+  visually we can tell from above all because of proj X discontinued.
+  to answer this by RAG graph enhanced retrievers are needed.
+
+  Frameworks:
+    1. LlamaIndex (via Property Graph Index)
+    2. LangChain / LangGraph
+  ----
+
+
+Why Vector Search Alone Falls Short
+  Standard vector retrievers struggle with complex data structures because they search purely for numerical proximity:
+
+  1⃣️ The "Lost in the Middle" Problem: Vector chunking fragments continuous narratives. If Fact A is in paragraph 1 and Fact B is 
+    in paragraph 20, a vector search might fetch one but miss the connection.
+  2⃣️ Failure at Global Summarization: Asking a vector retriever "What are the recurring themes across these 500 documents?" 
+    fails because it can only pull a handful of localized chunks.
+  3⃣️ No Multi-Hop Reasoning: A vector database cannot natively execute logic like: Find X → look up X’s manufacturer → find where 
+    that manufacturer is based → retrieve regulations for that region.
+

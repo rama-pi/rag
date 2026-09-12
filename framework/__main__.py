@@ -1,10 +1,15 @@
-#helps as a self test for this folder
-# framework/__main__.py
+'''
+helps as a self test for this folder
+how to run: from root folder, python -m framework
+'''
+
 import sys
 import os
 from pathlib import Path
 
 # Explicitly import your framework utilities
+# 2 choices with imports: relative (. or ..) or absolute
+# using absolute here
 from framework.base_classes import Model
 from framework.helpers import discover
 

@@ -29,11 +29,11 @@ class BM25_embedder(Embedder, embed_model="BM25"):
 
 
         # compute sparse embedding per chunk / doc
-        sparse_list = []
+        sparse_list = []  # list of dict's w/ key = index value = score
         for chunk in chunks:
             tf = Counter(chunk.split())
             log_len = len(chunk.split())
-            embedding = {}
+            embedding = {}    # key = index value = score
 
             for word, freq in tf.items():
                 if word in vocab:

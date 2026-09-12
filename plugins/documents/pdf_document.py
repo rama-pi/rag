@@ -31,14 +31,14 @@ class PdfDocument(Document, document_type='pdf'):
     def chunk(self, segment: str):
         return self.chunker.chunk(segment)
     def embed(self, chunks: list):
-        embeddings = {}
+        embeddings = {} # key = embed model value = embedding/s
         for name,embedder in self.embedders.items():
             embeddings[name] = embedder.embed(chunks)
         return embeddings
     def store_document(self, document_name: str):
         return self.storer.store_document(document_name)
-    def store(self, chunks: list, store_vecs: list):
-        return self.storer.store(chunks, store_vecs)
+    def store(self, doc_id: int, chunks: list, store_vecs: list):
+        return self.storer.store(doc_id, chunks, store_vecs)
     def query(self, chunk: str):
         q_v = self.embedder.embed(chunk)
         q_v = struct.pack(

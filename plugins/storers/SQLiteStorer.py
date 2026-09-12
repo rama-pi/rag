@@ -34,7 +34,7 @@ class SQLiteStorer(Storer, storage_type="sqlite"):
                 """
                 CREATE TABLE IF NOT EXISTS chunks 
                 (
-                chunk_id INTEGER PRIMARY KEY, text TEXT
+                chunk_id INTEGER PRIMARY KEY, doc_id INT, chunk TEXT
                 )
                 """
                 )
@@ -60,14 +60,15 @@ class SQLiteStorer(Storer, storage_type="sqlite"):
         document_id = row[0]
         return document_id
     
-    def store(self, chunks: list, store_vecs: list):
+    def store(self, doc_id: int, chunks: list, store_vecs: list):
         with self.db_conn:
             for i in range(len(chunks)):
                 self.cur.execute(
                         """
-                        INSERT INTO chunks (text) VALUES (:text)
+                        INSERT INTO chunks (doc_id, chunk) VALUES (:doc_id, :chunk)
                         """,
-                        {"text": chunks[i]
+                        {"doc_id": doc_id,
+                         "chunk": chunks[i]
                          }
                         )
                 generated_id = self.cur.lastrowid

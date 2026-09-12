@@ -1,0 +1,24 @@
+most ingestions do;
+
+	Original PDF
+    	│
+    	▼
+	Parse
+    	│
+    	▼
+	Remove / ignore things
+    	├── headers
+    	├── footers
+    	├── page layout
+    	├── images
+    	├── fonts
+    	├── PDF structure
+    	├── formatting
+    	└── other non-content data
+    	│
+    	▼
+
+hence most RAG's can't answer Q's like 'what font used' as such layout/formatting information is lost in parsing.
+
+
+

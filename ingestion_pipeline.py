@@ -55,6 +55,7 @@ def load_config():
         print(f"An error occurred:")
         sys.exit(1)
 
+# similar to llama_index.core::SimpleDirectoryReader
 def ingest():
     ingest_subfolder = "./ingestion_docs"
     # 1. Convert the folder path to a proper path object relative to project root
@@ -76,6 +77,8 @@ def ingest():
             chunks = doc.chunk(paras[-1])
             chunks = [doc.preprocess(chunk) for chunk in chunks]
             vecs = doc.embed(chunks)
+            print(vecs)
+            #doc.store(doc_id, chunks, vecs.values())
             docs.append({'doc': doc, 'id': doc_id, 'name': full_path})
             print(f"-------{full_path}-----")
             print(vecs.keys())

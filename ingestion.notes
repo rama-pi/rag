@@ -17,6 +17,36 @@ ingestion_pipeline.py
         ├── Embedder
         └── Storer
 
+Ex:
+
+                 ingest()
+                    │
+          discover input files
+                    │
+          ┌─────────┴─────────┐
+          ▼                   ▼
+      file1.pdf            file2.pdf
+          │                   │
+          ▼                   ▼
+    Document.open()      Document.open()
+          │                   │
+          ▼                   ▼
+       parsing             parsing
+          │                   │
+          ▼                   ▼
+       chunking             chunking
+          │                   │
+          ▼                   ▼
+      preprocessing       preprocessing
+          │                   │
+          ▼                   ▼
+      embeddings          embeddings
+          │                   │
+          └─────────┬─────────┘
+                    ▼
+                 storage
+
+
 ML pipeline:
 Raw Data Sources  ➡️  Data Wrangling  ➡️  Data Cleaning  ➡️  Feature Engineering  ➡️  Model Ready Data
 

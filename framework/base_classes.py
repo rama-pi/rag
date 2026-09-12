@@ -145,7 +145,7 @@ class Document(ABC):
     @abstractmethod
     def embed(self, chunks: list):
         pass
-    def store(self, chunks: list, store_vecs: list):
+    def store(self, doc_id: int, chunks: list, store_vecs: list):
         pass
     def query(self, chunk: str):
         pass
@@ -268,7 +268,7 @@ class Storer(ABC):
     registry = {}
 
     @abstractmethod
-    def store(self, chunks: list, store_vec: list):
+    def store(self, doc_id: int, chunks: list, store_vec: list):
         pass
     @abstractmethod
     def query(self, query_vec: list):
