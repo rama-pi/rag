@@ -3,10 +3,21 @@ from datetime import datetime
 
 from framework.base_classes import Storer
 
-import sqlite3
-import sqlite_vec
 import struct
 import ollama
+
+# 1. Path to  custom dylib for FTS support
+custom_sqlite_path = "/Users/rama-mac/CODE/sqlite/libsqlite3.dylib"
+if os.path.exists(custom_sqlite_path):
+    ctypes.CDLL(custom_sqlite_path, mode=ctypes.RTLD_GLOBAL)
+    print("✅ Custom SQLite library injected successfully!")
+else:
+    raise RuntimeError(
+            "No FTS support in this SQLite build"
+            )
+# import now after above
+import sqlite3
+import sqlite_vec
 
 class SQLiteStorer(Storer, storage_type="sqlite"):
     def __init__(self, storage_type: str, db_collection: str):
@@ -42,7 +53,7 @@ class SQLiteStorer(Storer, storage_type="sqlite"):
                 """
                 CREATE VIRTUAL TABLE IF NOT EXISTS vec_chunks USING vec0
                 (
-                chunk_id INTEGER PRIMARY KEY,embedding float[768]
+                chunk_id INTEGER PRIMARY KEY, embedding float[768]
                 )
                 """
                 )

@@ -1,3 +1,30 @@
+🧱 The Shape and Dimensions of a TensorYou can understand tensors by looking at their "Rank" (the number of axes or dimensions they have):Rank / DimensionCommon Mathematical NameWhat it Represents in MLVisual RepresentationRank 0ScalarA single number (e.g., a loss score or learning rate).47Rank 1VectorA 1D list of numbers (e.g., a single 768-dimension Ollama embedding).[0.1, -0.4, 0.8]Rank 2MatrixA 2D grid of numbers with rows and columns (e.g., a single table chunk or layer weight matrix).[[1, 2], [3, 4]]Rank 33D TensorA cube of numbers stacked together (e.g., a colored image with Height, Width, and 3 Color Channels).A book of matricesRank 4+High-Dimensional TensorComplex data shapes (e.g., a Batch of colored video clips with dimensions: [BatchSize, Frames, Height, Width, Channels]).Hyper-dimensional space
+
+
+
+🧱 The Shape and Dimensions of a Tensor
+   You can understand tensors by looking at their "Rank" (the number of axes or dimensions they have):
+Rank / Dim      Math Name              What it Represents in ML 			                                    Visual rep
+------------|----------------|-------------------------------------------------------------------------------------------|--------------------
+Rank 0      |      Scalar    | single number (e.g., a loss score or learning rate)                                       |         47
+Rank 1      |      Vector    | 1D list of numbers (e.g., a single 768-dimension Ollama embedding)                        | [0.1, -0.4, 0.8]
+Rank 2      |      Matrix    | 2D grid of numbers with rows and columns e.g., a single table chunk                       | [[1, 2], [3, 4]]
+Rank 3      |      3D Tensor | cube of numbers stacked together e.g colored image with Height, Width, & 3 Color Channels.| A book of matrices
+Rank 4+     |      High      | Complex data shapes (e.g., a Batch of colored video clips with dimensions:                | Hyper-dim space
+            |    Dimension   | [BatchSize, Frames, Height, Width, Channels]).                                            | 
+            |    Tensor      |                                                                                           |
+----------------------------------------------------------------------------------------------------------------------------------------------
+
+
+A tensor is structurally identical to a NumPy array, but it includes two specialized upgrades designed specifically for AI:
+  Hardware Acceleration: NumPy arrays are strictly locked to run on your computer's CPU. Tensors (in frameworks like PyTorch or TensorFlow) 
+                         can live directly inside your GPU's VRAM, making mathematical multiplications up to 100× faster.
+  Automatic Differentiation (Autograd): Tensors track their own mathematical history. When you pass a tensor through a neural network, it 
+                        remembers every operation performed on it. This allows the system to instantly run calculus backward (backpropagation) 
+                        to calculate gradients and update model weights during training.
+
+  when you fetch a vector embedding from Ollama, you are receiving a Rank 1 Tensor (a 768-element list).
+
 
 stores plugin
 	│
@@ -30,6 +57,7 @@ Vector Indexing methods:
   6⃣️ QUANTIZATION INDEXING
   7⃣️ HASHING
 
+0⃣️ FLAT:
 1⃣️ IVF:
   IVF speeds up vector search by dividing vectors into clusters. During a search, the query is compared first with the cluster 
   representatives/centroid, and only the vectors inside the most relevant clusters are searched. Then rank based on representatives/
@@ -166,4 +194,16 @@ Vector Indexing methods:
 4⃣️ Hashing indexing
   Hash functions to map similar high-dimensional vectors into same Hash buckets.
   Search/compare query vector against  only the vectors in the hash bucket that query hash maps to.
+
+
+
+Embedding to vector indexing support:
+
+ | Embedding type    | Typical representation                   | Index possibilities                                 |
+ | ----------------- | ---------------------------------------- | --------------------------------------------------- |
+ | Dense             | `[0.12, -0.31, 0.87, ...]`               | FLAT, IVF, HNSW, PQ, SQ, etc.                       |
+ | Sparse            | `{term_id: weight, ...}`                 | Sparse/inverted indexes, specialized sparse indexes |
+ | Binary            | `01011010...`                            | Binary indexes / Hamming-based search               |
+ | Quantized dense   | integers/codes representing dense vector | SQ, PQ, etc.                                        |
+  --------------------------------------------------------------------------------------------------------------------
 

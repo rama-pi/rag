@@ -1,10 +1,10 @@
-{'BM25': [{0: 0.28768207245178085, 1: 0.28768207245178085, 2: 0.28768207245178085, 3: 0.28768207245178085, 4: 0.28768207245178085, 5: 0.28768207245178085}], 
- 'nomic-embed-text': EmbedResponse(model='nomic-embed-text', created_at=None, done=None, done_reason=None, total_duration=21905625, load_duration=9705125, prompt_eval_count=11, prompt_eval_duration=None, eval_count=None, eval_duration=None, 
-                     embeddings=[[0.0077530695, -0.028318647, -0.16236885, -0.044929974, 0.023763077, 0.00029337654, 0.05466162, -0.014929912, -0.061369788, 0.020422753, -0.030939126, 0.033752307, 0.058261402, -0.017947273, 0.03995357, -0.011883306, 
+formatted -
 
-
-
-'nomic-embed-text': EmbedResponse(model='nomic-embed-text', ,, embeddings=[[0.0077530695, -0.028318647
-
-
+{'BM25': [{0: 0.28768207245178085, 1: 0.28768207245178085, 2: 0.28768207245178085, 3: 0.28768207245178085, 4: 0.28768207245178085, 
+           5: 0.28768207245178085}], 
+ 'nomic-embed-text': EmbedResponse(model='nomic-embed-text', created_at=None, done=None, done_reason=None, total_duration=21905625, 
+                     load_duration=9705125, prompt_eval_count=11, prompt_eval_duration=None, eval_count=None, eval_duration=None, 
+                     embeddings=[[0.0077530695, -0.028318647, -0.16236885, -0.044929974, 0.023763077, 0.00029337654, 0.05466162, 
+                                 -0.014929912, -0.061369788, 0.020422753, -0.030939126, 0.033752307, 0.058261402, -0.017947273, 
+                                  0.03995357, -0.011883306, 
 

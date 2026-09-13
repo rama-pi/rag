@@ -98,3 +98,32 @@ SQLite
 database
   └── tables
         └── rows
+
+
+
+FTS5:
+  FTS5 (Full-Text Search 5) is a highly optimized, built-in extension module for SQLite designed specifically to handle advanced 
+  search-engine keyword matching,
+
+  Instead of treating columns like standard table rows, FTS5 transforms a table into a powerhouse lexical search engine right inside 
+  your database file.
+
+  When you use it in your hybrid RAG pipeline, it acts as your Sparse Keyword Engine. Here is exactly what FTS5 is doing under the 
+  hood and why it is so powerful: 
+
+  1⃣️  It Builds an Inverted Index (The Text Indexer)
+  2⃣️  It Natively Computes BM25 Scoring
+     The single biggest reason FTS5 is the gold standard for SQLite RAG pipelines is that the BM25 ranking formula is hardcoded directly 
+     into its native C-engine.. You don't need Python libraries to loop through text and calculate mathematical frequencies. You simply 
+     run a query utilizing the built-in bm25() function:
+     SELECT rowid, -bm25(fts_chunks) FROM fts_chunks WHERE fts_chunks MATCH 'maternity';
+     SQLite intercepts the MATCH operator, calculates Term Frequency, handles Document Length Normalization, scales it using your 
+     k1=1.2 and b=0.75 constraints from your config file, and dynamically hands your Python script a mathematical relevance score. 
+  3⃣️  Advanced Query Capabilities Natively
+     FTS5 goes way beyond basic string checking. Because it is a true search engine index, it understands specialized search expressions 
+     natively inside your MATCH strings: 
+     - Prefix Search: Searching employ* instantly matches "employee", "employment", or "employer".
+     - Proximity Search (NEAR): Searching NEAR("maternity" "stipend", 5) finds chunks where those two words are separated by no more than 
+       5 other words.
+     - Boolean Logic: Natively handles MATCH 'stipend AND NOT 2024' to filter out text variants on the fl
+     
