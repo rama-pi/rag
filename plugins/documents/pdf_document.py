@@ -30,22 +30,41 @@ class PdfDocument(Document, document_type='pdf'):
         self.parser.dump_pages(self.pages)
     def chunk(self, segment: str):
         return self.chunker.chunk(segment)
+    def store_document(self, document_name: str):
+        return self.storer.store_document(document_name)
+    def store_chunks(self, doc_id: int, chunks: list):
+        return self.storer.store_chunks(doc_id, chunks)
+    def get_chunks(self, doc_id: int | None = None):
+        return self.storer.get_chunks(doc_id)
+    def store_embedding(self, vecs: list):
+        self.embedders['nomic-embed-text'].embed(vec)
+        return
+    def store_and_embed_chunks(self, doc_id: int, chunks: list):
+        # store chunks, make embedding per chunk, store chunk's embedding
+        # model name of the embedder
+        model_name = self.config["dense_embedder"]["model_name"]
+        for chunk in chunks:
+            #store chunk
+            chunk_id = self.storer.store_chunk(doc_id, chunk)
+            embedding = self.embedders[model_name].embed(chunk)
+            #store embedding
+            self.storer.store_vector(chunk_id, embedding.embeddings[0])
+        return
+    '''
     def embed(self, chunks: list):
         embeddings = {} # key = embed model value = embedding/s
         for name,embedder in self.embedders.items():
             embeddings[name] = embedder.embed(chunks)
         return embeddings
-    def store_document(self, document_name: str):
-        return self.storer.store_document(document_name)
-    def store(self, doc_id: int, chunks: list, store_vecs: list):
-        return self.storer.store(doc_id, chunks, store_vecs)
+    '''
     def query(self, chunk: str):
-        q_v = self.embedder.embed(chunk)
-        q_v = struct.pack(
-                f"{len(q_v.embeddings[0])}f",
-                *q_v.embeddings[0]
-                )
-        return self.storer.query(q_v)
+        # get chunks, entire corpus
+        # [ (chunk_id, doc_id, chunk), ... ]
+        chunks = get_chunks()
+        #get BM25 embedding per chunk
+        chunk_vocab_score = []
+        for chunk in chunks:
+            chunk_vocab_score.append({chunk[0]: self.embedders['BM25'].embed(chunk[2])})
     def preprocess(self, chunk: str):
         return self.preprocessor.preprocess(chunk)
 

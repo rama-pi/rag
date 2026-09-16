@@ -1,0 +1,32 @@
+Document.query(query)		<= ownership by ii
+       │
+       ├──→ Storer.get_chunks()
+       │         ↓
+       │       chunks
+       │         ↓
+       ├──→ BM25 retrieval
+       │         ↓
+       │       top K
+       │
+       ├──→ Storer.get_embeddings()
+       │         ↓
+       │       embeddings
+       │         ↓
+       ├──→ cosine retrieval
+       │         ↓
+       │       top K
+       │
+       └──→ RRF
+                 ↓
+          final ranked chunks
+
+
+
+Document.query()
+      │
+      ├── "Storer, give me chunks."
+      ├── "BM25, rank them."
+      ├── "Storer, give me embeddings."
+      ├── "Dense retriever, rank them."
+      └── "RRF, combine these rankings."
+

@@ -14,8 +14,9 @@ class BM25_embedder(Embedder, embed_model="BM25"):
         self.s = 0.5
         pass
     def embed(self, chunks: list):
-        # build chunk vocab
+        # build unique vocab walking per chunk
         vocab = set(word for chunk in chunks for word in chunk.split())
+        # give each unique vocab a uniq index
         vocab_to_idx = {word: idx for idx, word in enumerate(vocab)}
 
         # treat chunks as corpus / doc's
@@ -29,7 +30,7 @@ class BM25_embedder(Embedder, embed_model="BM25"):
 
 
         # compute sparse embedding per chunk / doc
-        sparse_list = []  # list of dict's w/ key = index value = score
+        sparse_list = []  
         for chunk in chunks:
             tf = Counter(chunk.split())
             log_len = len(chunk.split())
@@ -40,5 +41,8 @@ class BM25_embedder(Embedder, embed_model="BM25"):
                     idx = vocab_to_idx[word]
                     score = idf[word] * (freq * (self.k1 + 1)) / (freq + self.k1 * (1 - self.b + self.b * log_len / avg_chunk_len))
                     embedding[idx] = score
-            sparse_list.append(embedding)
+            sparse_list.append(embedding)  
+        # [ {vocab word index: vocab word score, vocab word index : vocab word score, ...} , {..} ]
+        #    <----------          per chunk   ------------------------------------------>
         return sparse_list
+    #def retriever(self, 

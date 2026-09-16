@@ -1,3 +1,14 @@
+
+When you run import sqlite3 inside your Miniconda environment, Python splits the library into two distinct pieces:
+ 1⃣️ The Python Wrapper: 
+  The files in ~/miniconda3/envs/ds/lib/python3.13/sqlite3/ are just the standard Python layout files that provide functions like .connect() 
+  and .execute(). They do not contain the actual database engine.
+ 2⃣️ The Core C Engine (.so or .dylib file): 
+  To do the heavy lifting, that Python wrapper looks for a compiled C binary library file named something like 
+  _sqlite3.cpython-313-x86_64-linux-gnu.so inside your environment's lib-dynload folder. This binary is linked directly to the shared 
+  library file shipped by Miniconda (~/miniconda3/envs/ds/lib/libsqlite3.so).
+--
+
 SQLite can support vector database capabilities, but it requires a specialized extension because native SQLite does not include 
 vector types or similarity search out of the box.
 
@@ -5,6 +16,7 @@ By default, SQLite only supports data types like integers, text, and blobs.  To 
 extension that introduces a native vector data type, high-performance distance functions (like Cosine or L2 distance), and index 
 acceleration structures like Hierarchical Navigable Small World (HNSW).
 
+--
 
 The Two Best Extensions for SQLite Vector Search:
 ************************************************

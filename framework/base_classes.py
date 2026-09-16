@@ -43,6 +43,7 @@ class Document(ABC):
         self.embedders = {}
         self.preprocessor = None
         self.pages = []
+        self.config = config
 
         # Loader
         loader_type = config['loader_type']
@@ -118,6 +119,7 @@ class Document(ABC):
     @abstractmethod
     def load(self, path: str|Path):
         pass
+
     @abstractmethod
     def dump_words(self, page: int):
         pass
@@ -139,19 +141,25 @@ class Document(ABC):
     @abstractmethod
     def dump_pages(self):
         pass
+
+    @abstractmethod
+    def preprocess(self, chunk: str):
+        pass
+
+    @abstractmethod
+    def store_document(self, document_name: str):
+        pass
     @abstractmethod
     def chunk(self, segment: str):
         pass
     @abstractmethod
-    def embed(self, chunks: list):
+    def store_chunks(self, doc_id: int, chunks: list):
         pass
-    def store(self, doc_id: int, chunks: list, store_vecs: list):
+    @abstractmethod
+    def get_chunks(self, doc_id: int | None = None):
         pass
+    @abstractmethod
     def query(self, chunk: str):
-        pass
-    def store_document(self, document_name: str):
-        pass
-    def preprocess(self, chunk: str):
         pass
 
     def __init_subclass__(cls, document_type=None, **kwargs):
@@ -268,13 +276,18 @@ class Storer(ABC):
     registry = {}
 
     @abstractmethod
-    def store(self, doc_id: int, chunks: list, store_vec: list):
-        pass
-    @abstractmethod
-    def query(self, query_vec: list):
-        pass
-    @abstractmethod
     def store_document(self, document_name: str):
+        pass
+    @abstractmethod
+    def store_chunk(self, doc_id: int, chunk: str) -> int:
+        pass
+    @abstractmethod
+    def get_chunks(self, doc_id: int | None = None):
+        pass
+    def store_vector(self, chunk_id: int, vec: list) -> None:
+        pass
+    @abstractmethod
+    def get_vector(self, chunk_id: int) -> list:
         pass
     def __init_subclass__(cls, storage_type=None, **kwargs):
         super().__init_subclass__(**kwargs)

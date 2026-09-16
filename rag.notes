@@ -473,3 +473,71 @@ same lemma may appear repeatedly
 
 '''
 
+
+INGESTION
+─────────
+Document
+   ↓
+Chunk
+   ↓
+Store chunks in SQL
+   ↓
+Generate embeddings for those chunks
+   ↓
+Store embeddings
+
+QUERY TIME
+──────────
+User query
+    │
+    ├──────────────→ BM25 scoring
+    │                    │
+    │                    ↓
+    │              ranked chunk IDs
+    │
+    └──────────────→ embedding
+                         │
+                         ↓
+                    cosine similarity
+                         │
+                         ↓
+                   ranked chunk IDs
+                         │
+              ┌──────────┘
+              ↓
+             RRF
+              ↓
+       final ranked chunk IDs
+              ↓
+       retrieve chunk text
+              ↓
+        context for LLM
+              ↓
+             LLM
+              ↓
+            answer
+
+
+query
+  │
+  ├───────────────────────────────┐
+  │                               │
+  ↓                               ↓
+get all chunks                 get all embeddings
+  │                               │
+  ↓                               ↓
+BM25 scoring                 cosine similarity
+  │                               │
+  ↓                               ↓
+top K chunk IDs              top K chunk IDs
+  │                               │
+  └───────────────┬───────────────┘
+                  ↓
+                 RRF
+                  ↓
+          final ranked chunk IDs
+                  ↓
+          retrieve chunk TEXT
+                  ↓
+                 LLM
+

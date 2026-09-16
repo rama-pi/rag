@@ -76,13 +76,11 @@ def ingest():
             paras = doc.parse_paras(page=0)
             chunks = doc.chunk(paras[-1])
             chunks = [doc.preprocess(chunk) for chunk in chunks]
-            vecs = doc.embed(chunks)
-            print(vecs)
-            #doc.store(doc_id, chunks, vecs.values())
+            doc.store_and_embed_chunks(doc_id, chunks)
             docs.append({'doc': doc, 'id': doc_id, 'name': full_path})
-            print(f"-------{full_path}-----")
-            print(vecs.keys())
-    print(docs)
+    
+    for doc in docs:
+        print(doc)
     return
 
 

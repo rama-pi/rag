@@ -1,5 +1,6 @@
 import os, sys, json, re, string
 from datetime import datetime
+import ctypes
 
 from framework.base_classes import Storer
 
@@ -32,7 +33,8 @@ class SQLiteStorer(Storer, storage_type="sqlite"):
         self.cur = self.db_conn.cursor()
 
         # tables for doc, chunk, embeddings
-        self.cur.execute(
+        with self.db_conn:
+            self.cur.execute(
                 """
                 CREATE TABLE IF NOT EXISTS documents
                 (
@@ -41,19 +43,19 @@ class SQLiteStorer(Storer, storage_type="sqlite"):
                 )
                 """
                 )
-        self.cur.execute(
+            self.cur.execute(
                 """
-                CREATE TABLE IF NOT EXISTS chunks 
+                CREATE TABLE IF NOT EXISTS chunks
                 (
                 chunk_id INTEGER PRIMARY KEY, doc_id INT, chunk TEXT
                 )
                 """
                 )
-        self.cur.execute(
+            self.cur.execute(
                 """
                 CREATE VIRTUAL TABLE IF NOT EXISTS vec_chunks USING vec0
                 (
-                chunk_id INTEGER PRIMARY KEY, embedding float[768]
+                chunk_id INTEGER PRIMARY KEY, vec_len INT, embedding float[768]
                 )
                 """
                 )
@@ -70,7 +72,56 @@ class SQLiteStorer(Storer, storage_type="sqlite"):
             ).fetchone()
         document_id = row[0]
         return document_id
-    
+    def store_chunk(self, doc_id: int, chunk: str) -> int:
+        with self.db_conn:
+            self.cur.execute(
+                    """
+                    INSERT INTO chunks (doc_id, chunk) VALUES (:doc_id, :chunk)
+                    """,
+                    {"doc_id": doc_id,
+                     "chunk": chunk
+                     }
+                    )
+            generated_id = self.cur.lastrowid
+        # chunk_id
+        return generated_id
+    def get_chunks(self, doc_id: int | None = None):
+        # all chunks of a given doc_id
+        with self.db_conn:
+            rows = self.db_conn.execute(
+            """
+            SELECT chunk_id, doc_id, chunk from chunks WHERE (:doc_id IS NULL OR doc_id = :doc_id)
+            """,
+            {"doc_id": doc_id}
+            ).fetchall()
+        # [(chunk_id, doc_id, chunk), (chunk_id, doc_id, chunk)]
+        return rows
+    def store_vector(self, chunk_id: int, vec: list) -> None:
+        vector_len = len(vec)
+        vector_bytes = struct.pack(f"{vector_len}f", *vec)
+        with self.db_conn:
+            self.cur.execute(
+                """
+                INSERT INTO vec_chunks (chunk_id, vec_len, embedding) VALUES (:id, :vec_len, :emb)
+                """,
+                {
+                    "id":chunk_id,
+                    "vec_len": vector_len,
+                    "emb":vector_bytes
+                }
+                )
+        return
+    def get_vector(self, chunk_id: int) -> list:
+        packed_vec = self.cur.execute(
+                """
+                SELECT vec_len, embedding FROM vec_chunks WHERE chunk_id = :chunk_id
+                """,
+                {"chunk_id": chunk_id
+                 }
+                ).fetchone()
+        unpacked_vec = struct.unpack(f"{packed_vec[0]}f", packed_vec[1])
+        return unpacked_vec
+    '''
     def store(self, doc_id: int, chunks: list, store_vecs: list):
         with self.db_conn:
             for i in range(len(chunks)):
@@ -96,6 +147,7 @@ class SQLiteStorer(Storer, storage_type="sqlite"):
                         )
         return
 
+    '''
     def query(self, query_vec: list):
         results = self.db_conn.execute(
                 """
