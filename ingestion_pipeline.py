@@ -73,10 +73,13 @@ def ingest():
         if os.path.isfile(full_path):
             doc = Document.open(full_path, config)
             doc_id = doc.store_document(full_path)
-            paras = doc.parse_paras(page=0)
-            chunks = doc.chunk(paras[-1])
-            chunks = [doc.preprocess(chunk) for chunk in chunks]
-            doc.store_and_embed_chunks(doc_id, chunks)
+            page_numbers = doc.get_page_numbers()
+            for page_number in page_numbers:
+                paras = doc.parse_paras(page=page_number)
+                for para in paras:
+                    chunks = doc.chunk(para)
+                    chunks = [doc.preprocess(chunk) for chunk in chunks]
+                    doc.store_and_embed_chunks(doc_id, chunks)
             docs.append({'doc': doc, 'id': doc_id, 'name': full_path})
     
     for doc in docs:

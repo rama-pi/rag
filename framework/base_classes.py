@@ -139,6 +139,9 @@ class Document(ABC):
     def parse_paras(self, page: int):
         pass
     @abstractmethod
+    def get_page_numbers(self):
+        pass
+    @abstractmethod
     def dump_pages(self):
         pass
 

@@ -9,6 +9,7 @@ class PdfParser(Parser, parser_type="pdf"):
         pass
     @staticmethod
     def build_lines(page: Page):
+        # build lines for a given page
         y = 0
         line = ''
         lines = {}
@@ -28,6 +29,7 @@ class PdfParser(Parser, parser_type="pdf"):
         return lines
     @staticmethod
     def build_paras(page: Page):
+        # build paragraphs for the given page
         lines = PdfParser.build_lines(page)
 
         GAP_THRESHOLD = 20.0
@@ -53,6 +55,7 @@ class PdfParser(Parser, parser_type="pdf"):
 
         if current_para:
             paras.append(current_para)
+        # list of para's
         return paras
     def parse_words(self, page:Page):
         return page.words

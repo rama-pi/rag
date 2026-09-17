@@ -25,7 +25,11 @@ class PdfDocument(Document, document_type='pdf'):
     def dump_paras(self, page: int):
         self.parser.dump_paras(self.pages[page])
     def parse_paras(self, page: int):
-        return self.parser.parse_paras(self.pages[page])
+        # cast arg page # into index into pages[]i
+        # assume sequential page #'s by pdf loader
+        return self.parser.parse_paras(self.pages[page-1])
+    def get_page_numbers(self):
+        return [page.page_number for page in self.pages]
     def dump_pages(self):
         self.parser.dump_pages(self.pages)
     def chunk(self, segment: str):
