@@ -1,0 +1,14 @@
+Order matters:
+	Because cryptographic hashing algorithms like SHA-256 process data as a sequential stream of bytes, 
+        changing the order of even a single character alters the mathematical path entirely.
+
+avalanche effect:
+	This is a fundamental security property called the avalanche effect—even the tiniest change in the input (like swapping 
+	two letters or changing a lowercase to an uppercase letter) results in a completely unrecognizable, radically different hash.
+
+
+Why this is perfect for file ingestion pipeline:
+	This is exactly what you want when preventing duplicate documents in your database. If a user uploads a text file, 
+	and later someone rearranges the sentences inside that file without adding any new words, the content is technically 
+	different.Because order matters to SHA-256, your script will correctly identify it as a modified version (a new hash) 
+	rather than treating it as the exact same file.

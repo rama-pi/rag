@@ -2,6 +2,17 @@ import os, sys, json, re, string
 import importlib
 from pathlib import Path
 
+class ExistsCheck:
+    def __eq__(self, other):
+        # SQL returned None means the document already exists!
+        return other is None
+
+    def __radd__(self, other):  # Built-in right side operator fallback helper
+        return self.__eq__(other)
+
+# Define your keyword
+EXISTS = ExistsCheck()
+
 ignore_words = {
         "the",
         "a",

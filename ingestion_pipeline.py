@@ -5,7 +5,7 @@ from pathlib import Path
 import importlib
 
 
-from framework.helpers import discover
+from framework.helpers import discover, EXISTS
 from framework.base_classes import Document
 
 config = {
@@ -38,10 +38,6 @@ config = {
 docs = []
 # global stats
 total_documents = 0
-total_paras  = 0
-total_pages = 0
-total_chunks = 0
-
 
 def load_config():
     global config
@@ -63,7 +59,8 @@ def load_config():
 
 # similar to llama_index.core::SimpleDirectoryReader
 def ingest():
-    global total_documents, total_pages, total_paras, total_chunks
+
+    global total_documents
 
     ingest_subfolder = "./ingestion_docs"
     # 1. Convert the folder path to a proper path object relative to project root
@@ -74,34 +71,59 @@ def ingest():
 
     # 3. Iterate over every entry in the directory
     for entry in os.listdir(base_path):
+        total_pages = 0
+        total_paras = 0
+        total_chunks = 0
+
         # Skip hidden files (like .DS_Store), private files (__init__.py), and directories
         if entry.startswith('.') or entry.startswith('__') or not entry.endswith('.pdf'):
             continue
         full_path = os.path.join(base_path, entry)
         if os.path.isfile(full_path):
-            doc = Document.open(full_path, config)
-            mdata = json.dumps(doc.get_file_meta())
-            fhash  = doc.get_file_hash()
-            doc_id = doc.store_document(full_path, mdata, fhash)
-            if doc_id is None:
-                # doc already ingested
-                continue
-            total_documents += 1
-            page_numbers = doc.get_page_numbers()
-            total_pages += len(page_numbers)
-            for page_number in page_numbers:
-                paras = doc.parse_paras(page=page_number)
-                total_paras += len(paras)
-                for para in paras:
-                    chunks = doc.chunk(para)
-                    chunks = [doc.preprocess(chunk) for chunk in chunks]
-                    total_chunks += len(chunks)
-                    doc.store_and_embed_chunks(doc_id, chunks)
-            docs.append({'doc': doc, 'id': doc_id, 'name': full_path})
+            try:
+                doc = Document.open(full_path, config)
+                mdata = json.dumps(doc.get_file_meta())
+                fhash  = doc.get_file_hash()
+                doc_id = doc.store_document(full_path, mdata, fhash)
+                if doc_id == EXISTS:
+                    docs.append(
+                            {
+                                'id': 'Existe déjà',
+                                'name': full_path,
+                                'pages': total_pages,
+                                'paras': total_paras,
+                                'chunks': total_chunks,
+                            }
+                            )
+                    continue
+                total_documents += 1
+                page_numbers = doc.get_page_numbers()
+                total_pages += len(page_numbers)
+                for page_number in page_numbers:
+                    paras = doc.parse_paras(page=page_number)
+                    total_paras += len(paras)
+                    for para in paras:
+                        chunks = doc.chunk(para)
+                        chunks = [doc.preprocess(chunk) for chunk in chunks]
+                        total_chunks += len(chunks)
+                        doc.store_and_embed_chunks(doc_id, chunks)
+                id = doc_id
+            except Exception as e:
+                id = str(e)
+            docs.append(
+                    {
+                        'id': id,
+                        'name': full_path,
+                        'pages': total_pages,
+                        'paras': total_paras,
+                        'chunks': total_chunks,
+                    }
+                    )
+        else:
+            continue
     
     for doc in docs:
         print(doc)
-    print(f"Document count {total_documents} Pages count {total_pages} Paragraphs count {total_paras} Chunks count {total_chunks}")
 
     return
 
