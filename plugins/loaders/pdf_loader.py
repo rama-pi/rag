@@ -4,6 +4,7 @@ from datetime import datetime
 from abc import ABC, abstractmethod
 import pdfplumber
 from pdfplumber.page import Page as pdfPage
+import hashlib
 
 from framework.base_classes import Loader
 from framework.base_classes import Page
@@ -13,7 +14,11 @@ class PdfLoader(Loader, loader_type="pdf"):
         pass
     def load(self, file_path: str | Path) -> dict:
         pages = []
+        # open doc, parse and collect page attributes
         with pdfplumber.open(file_path) as pdf:
+            # get doc metadata
+            mdata = pdf.metadata
+            # get pages
             for pg in pdf.pages:
                 page = Page()
                 page.page_number = pg.page_number
@@ -40,5 +45,10 @@ class PdfLoader(Loader, loader_type="pdf"):
                         rendered_image = cropped_page.to_image(resolution=150)
                         page.images.append(rendered_image)
                 pages.append(page)
-        return pages
+        # open doc, compute content hash
+        sha256 = hashlib.sha256()
+        with open(file_path, "rb") as f:
+            for block in iter(lambda: f.read(8192), b""):
+                sha256.update(block)
+        return (pages, sha256.hexdigest(), mdata)
 

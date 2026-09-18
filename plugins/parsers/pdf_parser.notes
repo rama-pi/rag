@@ -21,4 +21,17 @@ most ingestions do;
 hence most RAG's can't answer Q's like 'what font used' as such layout/formatting information is lost in parsing.
 
 
+A PDF can contain built-in metadata fields such as:
+	- Title
+	- Author
+	- Subject
+	- Creator
+	- Producer
+	- Creation date
+	- Modification date
+	- Keywords
+
+    Note: there is way to retrieve metadata thru API.
+
+
 

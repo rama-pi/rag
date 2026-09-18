@@ -1,4 +1,4 @@
-import os, sys, json, re, string
+import os, sys, json, re, string, json
 from datetime import datetime
 from abc import ABC, abstractmethod
 from pathlib import Path
@@ -72,7 +72,12 @@ def ingest():
         full_path = os.path.join(base_path, entry)
         if os.path.isfile(full_path):
             doc = Document.open(full_path, config)
-            doc_id = doc.store_document(full_path)
+            mdata = json.dumps(doc.get_file_meta())
+            fhash  = doc.get_file_hash()
+            doc_id = doc.store_document(full_path, mdata, fhash)
+            if doc_id is None:
+                # doc already ingested
+                continue
             page_numbers = doc.get_page_numbers()
             for page_number in page_numbers:
                 paras = doc.parse_paras(page=page_number)

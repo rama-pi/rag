@@ -13,7 +13,11 @@ class PdfDocument(Document, document_type='pdf'):
     def __init__(self, document_type: str, config: dict):
         super().__init__(config)
     def load(self, path: str|Path):
-        self.pages = self.loader.load(path)
+        self.pages, self.hash, self.metadata = self.loader.load(path)
+    def get_file_hash(self):
+        return self.hash
+    def get_file_meta(self):
+        return self.metadata
     def dump_words(self, page: int):
         self.parser.dump_words(self.pages[page])
     def parse_words(self, page: int):
@@ -34,8 +38,8 @@ class PdfDocument(Document, document_type='pdf'):
         self.parser.dump_pages(self.pages)
     def chunk(self, segment: str):
         return self.chunker.chunk(segment)
-    def store_document(self, document_name: str):
-        return self.storer.store_document(document_name)
+    def store_document(self, document_name: str, mdata: str, fhash: str):
+        return self.storer.store_document(document_name, mdata, fhash)
     def store_chunks(self, doc_id: int, chunks: list):
         return self.storer.store_chunks(doc_id, chunks)
     def get_chunks(self, doc_id: int | None = None):

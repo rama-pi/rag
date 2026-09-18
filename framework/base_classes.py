@@ -150,7 +150,14 @@ class Document(ABC):
         pass
 
     @abstractmethod
-    def store_document(self, document_name: str):
+    def get_file_meta(self):
+        pass
+    @abstractmethod
+    def get_file_hash(self):
+        pass
+
+    @abstractmethod
+    def store_document(self, document_name: str, mdata: str, fhash: str):
         pass
     @abstractmethod
     def chunk(self, segment: str):
@@ -279,7 +286,7 @@ class Storer(ABC):
     registry = {}
 
     @abstractmethod
-    def store_document(self, document_name: str):
+    def store_document(self, document_name: str, metadata: str, file_content_hash: str):
         pass
     @abstractmethod
     def store_chunk(self, doc_id: int, chunk: str) -> int:

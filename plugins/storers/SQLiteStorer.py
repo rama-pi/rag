@@ -39,7 +39,11 @@ class SQLiteStorer(Storer, storage_type="sqlite"):
                 CREATE TABLE IF NOT EXISTS documents
                 (
                 document_id INTEGER PRIMARY KEY,
-                filename TEXT
+                filename TEXT,
+                metadata TEXT,
+                file_content_hash TEXT,
+
+                UNIQUE(filename, file_content_hash)
                 )
                 """
                 )
@@ -60,17 +64,18 @@ class SQLiteStorer(Storer, storage_type="sqlite"):
                 """
                 )
 
-    def store_document(self, document_name: str):
+    def store_document(self, document_name: str, metadata: str, file_content_hash: str) -> int:
         with self.db_conn:
             row = self.cur.execute(
             """
-            INSERT INTO documents (filename)
-            VALUES (?)
+            INSERT INTO documents (filename, metadata, file_content_hash)
+            VALUES (?, ?, ?)
+            ON CONFLICT(filename, file_content_hash) DO NOTHING
             RETURNING document_id
             """,
-            (document_name,)
+            (document_name, metadata, file_content_hash)
             ).fetchone()
-        document_id = row[0]
+        document_id = row[0] if row else None
         return document_id
     def store_chunk(self, doc_id: int, chunk: str) -> int:
         with self.db_conn:
