@@ -36,6 +36,12 @@ config = {
 
 # keep opened docs  their id, name, onj
 docs = []
+# global stats
+total_documents = 0
+total_paras  = 0
+total_pages = 0
+total_chunks = 0
+
 
 def load_config():
     global config
@@ -57,6 +63,8 @@ def load_config():
 
 # similar to llama_index.core::SimpleDirectoryReader
 def ingest():
+    global total_documents, total_pages, total_paras, total_chunks
+
     ingest_subfolder = "./ingestion_docs"
     # 1. Convert the folder path to a proper path object relative to project root
     base_path = Path(ingest_subfolder)
@@ -78,17 +86,23 @@ def ingest():
             if doc_id is None:
                 # doc already ingested
                 continue
+            total_documents += 1
             page_numbers = doc.get_page_numbers()
+            total_pages += len(page_numbers)
             for page_number in page_numbers:
                 paras = doc.parse_paras(page=page_number)
+                total_paras += len(paras)
                 for para in paras:
                     chunks = doc.chunk(para)
                     chunks = [doc.preprocess(chunk) for chunk in chunks]
+                    total_chunks += len(chunks)
                     doc.store_and_embed_chunks(doc_id, chunks)
             docs.append({'doc': doc, 'id': doc_id, 'name': full_path})
     
     for doc in docs:
         print(doc)
+    print(f"Document count {total_documents} Pages count {total_pages} Paragraphs count {total_paras} Chunks count {total_chunks}")
+
     return
 
 
