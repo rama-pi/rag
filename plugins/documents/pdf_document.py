@@ -12,12 +12,14 @@ from framework.base_classes import Storer
 class PdfDocument(Document, document_type='pdf'):
     def __init__(self, document_type: str, config: dict):
         super().__init__(config)
+
     def load(self, path: str|Path):
         self.pages, self.hash, self.metadata = self.loader.load(path)
     def get_file_hash(self):
         return self.hash
     def get_file_meta(self):
         return self.metadata
+
     def dump_words(self, page: int):
         self.parser.dump_words(self.pages[page])
     def parse_words(self, page: int):
@@ -36,14 +38,19 @@ class PdfDocument(Document, document_type='pdf'):
         return [page.page_number for page in self.pages]
     def dump_pages(self):
         self.parser.dump_pages(self.pages)
+
     def chunk(self, segment: str):
         return self.chunker.chunk(segment)
+
+    def transaction(self):
+        return self.storer.transaction()
     def store_document(self, document_name: str, mdata: str, fhash: str):
         return self.storer.store_document(document_name, mdata, fhash)
     def store_chunks(self, doc_id: int, chunks: list):
         return self.storer.store_chunks(doc_id, chunks)
     def get_chunks(self, doc_id: int | None = None):
         return self.storer.get_chunks(doc_id)
+
     def store_embedding(self, vecs: list):
         self.embedders['nomic-embed-text'].embed(vec)
         return
@@ -58,6 +65,15 @@ class PdfDocument(Document, document_type='pdf'):
             #store embedding
             self.storer.store_vector(chunk_id, embedding.embeddings[0])
         return
+
+    '''
+    def beign(self):
+        return self.storer.begin()
+    def finalize(self):
+        return self.storer.finalize()
+    def abort():
+        return self.storer.abort()
+    '''
     '''
     def embed(self, chunks: list):
         embeddings = {} # key = embed model value = embedding/s

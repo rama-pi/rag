@@ -1,6 +1,7 @@
-import os, sys, json, re, string
+import os, sys, json, re, string 
 from datetime import datetime
 import ctypes
+from contextlib import contextmanager
 
 from framework.base_classes import Storer
 
@@ -19,6 +20,11 @@ else:
 # import now after above
 import sqlite3
 import sqlite_vec
+
+class TransactionAborted(sqlite3.DatabaseError):
+    """Raised when a database transaction is intentionally or forcedly aborted."""
+    pass
+
 
 class SQLiteStorer(Storer, storage_type="sqlite"):
     def __init__(self, storage_type: str, db_collection: str):
@@ -63,45 +69,89 @@ class SQLiteStorer(Storer, storage_type="sqlite"):
                 )
                 """
                 )
+    @contextmanager
+    def transaction(self):
+        self.transaction_begin()
 
+        try:
+            yield
+        except Exception as e:
+            self.transaction_abort()
+            raise TransactionAborted(
+                    "Transaction rolled back and terminated."
+                    ) from e
+        else:
+            self.transaction_finalize()
+    def transaction_begin(self):
+        # begin a transaction
+        if not self.db_conn.in_transaction:
+            self.db_conn.execute(
+                """
+                BEGIN DEFERRED TRANSACTION
+                """
+                )
+        return True
+    def transaction_finalize(self):
+        # commit a transaction
+        if self.db_conn.in_transaction:
+            self.db_conn.execute(
+                """
+                COMMIT TRANSACTION
+                """
+                )
+        return True
+    def transaction_abort(self):
+        # abort a transaction
+        if self.db_conn.in_transaction:
+            self.db_conn.execute(
+                """
+                ROLLBACK TRANSACTION
+                """
+                )
+        return True
     def store_document(self, document_name: str, metadata: str, file_content_hash: str) -> int:
-        with self.db_conn:
-            row = self.cur.execute(
+        # store doc, ret doc ID
+        row = self.cur.execute(
             """
             INSERT INTO documents (filename, metadata, file_content_hash)
             VALUES (?, ?, ?)
             ON CONFLICT(filename, file_content_hash) DO NOTHING
             RETURNING document_id
             """,
-            (document_name, metadata, file_content_hash)
-            ).fetchone()
+            (
+                document_name,
+                metadata,
+                file_content_hash
+            )).fetchone()
         document_id = row[0] if row else None
         return document_id
     def store_chunk(self, doc_id: int, chunk: str) -> int:
-        with self.db_conn:
-            self.cur.execute(
-                    """
-                    INSERT INTO chunks (doc_id, chunk) VALUES (:doc_id, :chunk)
-                    """,
-                    {"doc_id": doc_id,
-                     "chunk": chunk
-                     }
-                    )
-            generated_id = self.cur.lastrowid
+        # store chunk, ret chunk id
+        self.cur.execute(
+            """
+            INSERT INTO chunks (doc_id, chunk) VALUES (:doc_id, :chunk)
+            """,
+            {"doc_id": doc_id,
+             "chunk": chunk
+             }
+            )
+        generated_id = self.cur.lastrowid
         # chunk_id
         return generated_id
     def get_chunks(self, doc_id: int | None = None):
-        # all chunks of a given doc_id
-        with self.db_conn:
-            rows = self.db_conn.execute(
+        # ret chunks of doc_id doc
+        rows = self.db_conn.execute(
             """
             SELECT chunk_id, doc_id, chunk from chunks WHERE (:doc_id IS NULL OR doc_id = :doc_id)
             """,
-            {"doc_id": doc_id}
+            {
+                "doc_id": doc_id
+            }
             ).fetchall()
         # [(chunk_id, doc_id, chunk), (chunk_id, doc_id, chunk)]
         return rows
     def store_vector(self, chunk_id: int, vec: list) -> None:
+        # store chunk chunk_id's embedding
         vector_len = len(vec)
         vector_bytes = struct.pack(f"{vector_len}f", *vec)
         with self.db_conn:
@@ -115,7 +165,7 @@ class SQLiteStorer(Storer, storage_type="sqlite"):
                     "emb":vector_bytes
                 }
                 )
-        return
+        return None
     def get_vector(self, chunk_id: int) -> list:
         packed_vec = self.cur.execute(
                 """
@@ -126,6 +176,28 @@ class SQLiteStorer(Storer, storage_type="sqlite"):
                 ).fetchone()
         unpacked_vec = struct.unpack(f"{packed_vec[0]}f", packed_vec[1])
         return unpacked_vec
+    def query(self, query_vec: list):
+        results = self.db_conn.execute(
+                """
+                SELECT chunk_id, distance
+                FROM vec_chunks
+                WHERE embedding MATCH ?
+                ORDER BY distance
+                LIMIT 3
+                """
+                ,
+                (query_vec,)
+                ).fetchall()
+        # convert row-id's to chunks
+        t = tuple(i[0] for i in results)
+        placeholders = ",".join("?" for _ in t)
+        rows = self.db_conn.execute(
+                f"SELECT chunk_id, text FROM chunks WHERE chunk_id IN ({placeholders})", t
+                ).fetchall()
+
+        # add distance to rows 
+        rows = [rows[i]+(result[1],) for i, result in enumerate(results)]
+        return rows
     '''
     def store(self, doc_id: int, chunks: list, store_vecs: list):
         with self.db_conn:
@@ -153,26 +225,4 @@ class SQLiteStorer(Storer, storage_type="sqlite"):
         return
 
     '''
-    def query(self, query_vec: list):
-        results = self.db_conn.execute(
-                """
-                SELECT chunk_id, distance
-                FROM vec_chunks
-                WHERE embedding MATCH ?
-                ORDER BY distance
-                LIMIT 3
-                """
-                ,
-                (query_vec,)
-                ).fetchall()
-        # convert row-id's to chunks
-        t = tuple(i[0] for i in results)
-        placeholders = ",".join("?" for _ in t)
-        rows = self.db_conn.execute(
-                f"SELECT chunk_id, text FROM chunks WHERE chunk_id IN ({placeholders})", t
-                ).fetchall()
-
-        # add distance to rows 
-        rows = [rows[i]+(result[1],) for i, result in enumerate(results)]
-        return rows
 

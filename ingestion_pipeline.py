@@ -1,4 +1,4 @@
-import os, sys, json, re, string, json
+import os, sys, json, re, string, json, logging
 from datetime import datetime
 from abc import ABC, abstractmethod
 from pathlib import Path
@@ -38,6 +38,8 @@ config = {
 docs = []
 # global stats
 total_documents = 0
+# ?
+logger = logging.getLogger("ingestion_pipeline")
 
 def load_config():
     global config
@@ -71,6 +73,8 @@ def ingest():
 
     # 3. Iterate over every entry in the directory
     for entry in os.listdir(base_path):
+        doc_id = None
+        status = ''
         total_pages = 0
         total_paras = 0
         total_chunks = 0
@@ -80,45 +84,53 @@ def ingest():
             continue
         full_path = os.path.join(base_path, entry)
         if os.path.isfile(full_path):
-            try:
-                doc = Document.open(full_path, config)
-                mdata = json.dumps(doc.get_file_meta())
-                fhash  = doc.get_file_hash()
-                doc_id = doc.store_document(full_path, mdata, fhash)
-                if doc_id == EXISTS:
-                    docs.append(
-                            {
-                                'id': 'Existe déjà',
-                                'name': full_path,
-                                'pages': total_pages,
-                                'paras': total_paras,
-                                'chunks': total_chunks,
-                            }
-                            )
-                    continue
-                total_documents += 1
-                page_numbers = doc.get_page_numbers()
-                total_pages += len(page_numbers)
-                for page_number in page_numbers:
-                    paras = doc.parse_paras(page=page_number)
-                    total_paras += len(paras)
-                    for para in paras:
-                        chunks = doc.chunk(para)
-                        chunks = [doc.preprocess(chunk) for chunk in chunks]
-                        total_chunks += len(chunks)
-                        doc.store_and_embed_chunks(doc_id, chunks)
-                id = doc_id
-            except Exception as e:
-                id = str(e)
-            docs.append(
-                    {
-                        'id': id,
-                        'name': full_path,
-                        'pages': total_pages,
-                        'paras': total_paras,
-                        'chunks': total_chunks,
+            doc = Document.open(full_path, config)
+            result = {
+                    'id': None,
+                    'name': full_path,
+                    'status': 'processing',
+                    'pages': total_pages,
+                    'paras': total_paras,
+                    'chunks': total_chunks,
                     }
-                    )
+            docs.append(result)
+            
+            try:
+                with doc.transaction():
+                    mdata = doc.get_file_meta()
+                    mdata = json.dumps(mdata)
+                    fhash  = doc.get_file_hash()
+                    doc_id = doc.store_document(full_path, mdata, fhash)
+                    if doc_id == EXISTS:
+                        result['doc_id'] = doc_id
+                        result['status'] = 'already_ingested'
+                        continue
+                    total_documents += 1
+                    page_numbers = doc.get_page_numbers()
+                    total_pages += len(page_numbers)
+                    for page_number in page_numbers:
+                        paras = doc.parse_paras(page=page_number)
+                        total_paras += len(paras)
+                        for para in paras:
+                            chunks = doc.chunk(para)
+                            chunks = [doc.preprocess(chunk) for chunk in chunks]
+                            total_chunks += len(chunks)
+                            doc.store_and_embed_chunks(doc_id, chunks)
+                    result['id'] = doc_id
+                    result['status'] = 'ingested'
+                    result['pages'] = total_pages
+                    result['paras'] =  total_paras
+                    result['chunks'] = total_chunks
+            except Exception as e:
+                result['status'] = 'ingestion failed'
+                result['error'] = str(e)
+                result['pages'] = total_pages
+                result['paras'] =  total_paras
+                result['chunks'] = total_chunks
+
+                cause = e.__cause__
+                result['error'] = str(cause) if cause else str(e)
+                print(f"Failed to ingest {full_path}: {result['error']}")
         else:
             continue
     

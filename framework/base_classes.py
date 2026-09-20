@@ -121,6 +121,10 @@ class Document(ABC):
         pass
 
     @abstractmethod
+    def transaction(self):
+        pass
+
+    @abstractmethod
     def dump_words(self, page: int):
         pass
     @abstractmethod
@@ -171,6 +175,20 @@ class Document(ABC):
     @abstractmethod
     def query(self, chunk: str):
         pass
+    '''
+    # begin a db transaction
+    @abstractmethod
+    def begin(self):
+        pass
+    # finalize / commit the transaction
+    @abstractmethod
+    def finalize(self):
+        pass
+    # abort the transaction
+    @abstractmethod
+    def abort(self):
+        pass
+    '''
 
     def __init_subclass__(cls, document_type=None, **kwargs):
         super.__init_subclass__(**kwargs)
@@ -299,6 +317,20 @@ class Storer(ABC):
     @abstractmethod
     def get_vector(self, chunk_id: int) -> list:
         pass
+    def transaction(self):
+        pass
+    '''
+    @abstractmethod
+    def begin(self):
+        # begin a transaction
+        pass
+    def finalize(self):
+        # commit a transaction
+        pass
+    def abort(self):
+        # abort a transaction
+        pass
+    '''
     def __init_subclass__(cls, storage_type=None, **kwargs):
         super().__init_subclass__(**kwargs)
         cls.storage_name = storage_type
