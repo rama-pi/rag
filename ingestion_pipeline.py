@@ -1,4 +1,4 @@
-import os, sys, json, re, string, json, logging
+import os, sys, json, re, string, json, logging, subprocess
 from datetime import datetime
 from abc import ABC, abstractmethod
 from pathlib import Path
@@ -136,6 +136,16 @@ def ingest():
     
     for doc in docs:
         print(doc)
+
+    # visualize ingestion
+    with open("visualize_store.bash", "r") as f:
+        sql_script = f.read()
+    subprocess.run(
+            ["sqlite3", "rag_collection.db"],
+            input=sql_script,
+            text=True
+    )
+
 
     return
 

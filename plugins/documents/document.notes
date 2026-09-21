@@ -30,3 +30,16 @@ Document.query()
       ├── "Dense retriever, rank them."
       └── "RRF, combine these rankings."
 
+
+1 document
+    │
+    ├── N chunks
+    │      │
+    │      └── 1 embedding per chunk
+    │
+    └── N embeddings (indirectly, through its chunks)
+that is
+ 1 document → N chunks
+ 1 document → N embeddings
+ 1 chunk    → 1 embedding
+

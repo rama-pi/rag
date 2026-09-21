@@ -6,13 +6,13 @@
    You can understand tensors by looking at their "Rank" (the number of axes or dimensions they have):
 Rank / Dim      Math Name              What it Represents in ML 			                                    Visual rep
 ------------|----------------|-------------------------------------------------------------------------------------------|--------------------
-Rank 0      |      Scalar    | single number (e.g., a loss score or learning rate)                                       |         47
-Rank 1      |      Vector    | 1D list of numbers (e.g., a single 768-dimension Ollama embedding)                        | [0.1, -0.4, 0.8]
-Rank 2      |      Matrix    | 2D grid of numbers with rows and columns e.g., a single table chunk                       | [[1, 2], [3, 4]]
-Rank 3      |      3D Tensor | cube of numbers stacked together e.g colored image with Height, Width, & 3 Color Channels.| A book of matrices
-Rank 4+     |      High      | Complex data shapes (e.g., a Batch of colored video clips with dimensions:                | Hyper-dim space
-            |    Dimension   | [BatchSize, Frames, Height, Width, Channels]).                                            | 
-            |    Tensor      |                                                                                           |
+Rank 0      |    Scalar      | single number (e.g., a loss score or learning rate)                                       |         47
+Rank 1      |    Vector      | 1D list of numbers (e.g., a single 768-dimension Ollama embedding)                        | [0.1, -0.4, 0.8]
+Rank 2      |    Matrix      | 2D grid of numbers with rows and columns e.g., a single table chunk                       | [[1, 2], [3, 4]]
+Rank 3      |    3D Tensor   | cube of numbers stacked together e.g colored image with Height, Width, & 3 Color Channels.| A stack of matrices
+Rank 4+     |    3D+ Tensor  | Complex data shapes (e.g., a Batch of colored video clips with dimensions:                | Hyper-dim space
+            |                | [BatchSize, Frames, Height, Width, Channels]).                                            | 
+            |                |                                                                                           |
 ----------------------------------------------------------------------------------------------------------------------------------------------
 
 
