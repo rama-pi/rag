@@ -41,34 +41,52 @@ class SQLiteStorer(Storer, storage_type="sqlite"):
         # tables for doc, chunk, embeddings
         with self.db_conn:
             self.cur.execute(
-                """
-                CREATE TABLE IF NOT EXISTS documents
-                (
-                document_id INTEGER PRIMARY KEY,
-                filename TEXT,
-                metadata TEXT,
-                file_content_hash TEXT,
+                    """
+                    CREATE TABLE IF NOT EXISTS documents
+                    (
+                        document_id INTEGER PRIMARY KEY,
+                        filename TEXT,
+                        metadata TEXT,
+                        file_content_hash TEXT,
 
-                UNIQUE(filename, file_content_hash)
-                )
-                """
-                )
+                        UNIQUE(filename, file_content_hash)
+                    );
+                    """
+            )
             self.cur.execute(
-                """
-                CREATE TABLE IF NOT EXISTS chunks
-                (
-                chunk_id INTEGER PRIMARY KEY, doc_id INT, chunk TEXT
-                )
-                """
-                )
+                    """
+                    CREATE TABLE IF NOT EXISTS chunks
+                    (
+                        chunk_id INTEGER PRIMARY KEY,
+                        doc_id INT, chunk TEXT,
+
+                        FOREIGN KEY 
+                            (doc_id) REFERENCES documents(document_id)
+                            ON DELETE CASCADE
+                    );
+                    """
+            )
             self.cur.execute(
-                """
-                CREATE VIRTUAL TABLE IF NOT EXISTS vec_chunks USING vec0
-                (
-                chunk_id INTEGER PRIMARY KEY, vec_len INT, embedding float[768]
-                )
-                """
-                )
+                    """
+                    CREATE VIRTUAL TABLE IF NOT EXISTS vec_chunks USING vec0
+                    (
+                        chunk_id INTEGER PRIMARY KEY,
+                        vec_len INT,
+                        embedding float[768]
+                    );
+                    """
+            )
+            self.cur.execute(
+                    """
+                    CREATE TRIGGER IF NOT EXISTS cascade_delete_vec_chunks
+                    AFTER DELETE ON chunks
+                    BEGIN
+                        DELETE FROM vec_chunks WHERE chunk_id = OLD.chunk_id;
+                    END;
+                    """
+            )
+            self.db_conn.execute("PRAGMA trusted_schema = ON;")
+            self.db_conn.execute("PRAGMA foreign_keys = ON;")
     @contextmanager
     def transaction(self):
         self.transaction_begin()
