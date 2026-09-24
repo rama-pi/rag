@@ -102,3 +102,13 @@ Raw Data Sources  ➡️  Data Wrangling  ➡️  Data Cleaning  ➡️  Feature
    -----------------------|---------------------|---------------------------------------------
 
 
+
+Pending: 9/22
+	- better chunking
+	- metadata normalization
+	- duplicate detection
+	- incremental re-ingestion
+	- embedding-model changes
+
+
+

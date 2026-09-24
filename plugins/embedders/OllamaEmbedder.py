@@ -8,9 +8,9 @@ import ollama
 class Ollama_Embedder(Embedder, embed_model="nomic-embed-text"):
     def __init__(self, embed_model):
         pass
-    def embed(self, chunks: list):
+    def embed(self, chunk: str):
         response = ollama.embed(
                 model="nomic-embed-text",
-                input=chunks
+                input=chunk
             )
         return response
