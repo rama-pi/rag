@@ -144,6 +144,31 @@ def main():
 
     m = model(config["wanted_model"], config["wanted_mode"])
     a = Agent(m)
+
+    query = "What is the vacation policy?"
+
+    # embedders
+    engine = config["sparse_embedder"]["engine"]
+    if Embedder.registry[engine]:
+        self.embedders[engine] = Embedder.registry[engine](engine)
+    else:
+        raise RuntimeError(
+                f"No embedder registered as {engine}"
+                )
+    model_name = config["dense_embedder"]["model_name"]
+    if Embedder.registry[model_name]:
+        self.embedders[model_name] = Embedder.registry[model_name](model_name)
+    else:
+        raise RuntimeError(
+                f"No embedder registered as {model_name}"
+                )
+
+    # embed query
+    for name,embedder in self.embedders:
+        embeddings[name] = embedder.embed(chunks)
+    print(embeddings)
+
+    '''
     a.ask("Explain slicing.?")
     a.ask("what is ndarray?")
     a.ask("give me another example and put a marker like %%%%%")
@@ -156,8 +181,7 @@ def main():
     a.ask(" not 13 days and 20 hours rather it is 13 degress 20 minutes, please correct your previous answer")
 
     a.show_stats()
-    '''
-    #a.show_history()
+    a.show_history()
     '''
 
 if __name__ == "__main__":

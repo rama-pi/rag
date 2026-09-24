@@ -51,11 +51,17 @@ class PdfDocument(Document, document_type='pdf'):
     def get_chunks(self, doc_id: int | None = None):
         return self.storer.get_chunks(doc_id)
 
-    def store_embedding(self, vecs: list):
-        self.embedders['nomic-embed-text'].embed(vec)
-        return
+    def embed(self, chunk: list):
+        embeddings = {} # key = embed model value = embedding/s
+        for name,embedder in self.embedders.items():
+            embeddings[name] = embedder.embed(chunks)
+        return embeddings
+
+    def preprocess(self, chunk: str):
+        return self.preprocessor.preprocess(chunk)
+
     def store_and_embed_chunks(self, doc_id: int, chunks: list):
-        # store chunks, make embedding per chunk, store chunk's embedding
+        # store chunks, make embedding (dense) per chunk, store chunk's embedding
         # model name of the embedder
         model_name = self.config["dense_embedder"]["model_name"]
         for chunk in chunks:
@@ -67,20 +73,15 @@ class PdfDocument(Document, document_type='pdf'):
         return
 
     '''
+    def store_embedding(self, vecs: list):
+        self.embedders['nomic-embed-text'].embed(vec)
+        return
     def beign(self):
         return self.storer.begin()
     def finalize(self):
         return self.storer.finalize()
     def abort():
         return self.storer.abort()
-    '''
-    '''
-    def embed(self, chunks: list):
-        embeddings = {} # key = embed model value = embedding/s
-        for name,embedder in self.embedders.items():
-            embeddings[name] = embedder.embed(chunks)
-        return embeddings
-    '''
     def query(self, chunk: str):
         # get chunks, entire corpus
         # [ (chunk_id, doc_id, chunk), ... ]
@@ -89,6 +90,5 @@ class PdfDocument(Document, document_type='pdf'):
         chunk_vocab_score = []
         for chunk in chunks:
             chunk_vocab_score.append({chunk[0]: self.embedders['BM25'].embed(chunk[2])})
-    def preprocess(self, chunk: str):
-        return self.preprocessor.preprocess(chunk)
+    '''
 

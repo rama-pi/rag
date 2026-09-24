@@ -172,21 +172,9 @@ class Document(ABC):
     @abstractmethod
     def get_chunks(self, doc_id: int | None = None):
         pass
+    '''
     @abstractmethod
     def query(self, chunk: str):
-        pass
-    '''
-    # begin a db transaction
-    @abstractmethod
-    def begin(self):
-        pass
-    # finalize / commit the transaction
-    @abstractmethod
-    def finalize(self):
-        pass
-    # abort the transaction
-    @abstractmethod
-    def abort(self):
         pass
     '''
 
@@ -293,7 +281,7 @@ class Embedder(ABC):
     registry = {}
 
     @abstractmethod
-    def embed(self, chunks: list):
+    def embed(self, chunk: str):
         pass
     def __init_subclass__(cls, embed_model=None, **kwargs):
         super().__init_subclass__(**kwargs)
