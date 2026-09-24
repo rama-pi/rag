@@ -3,8 +3,9 @@ from datetime import datetime
 from abc import ABC, abstractmethod
 from pathlib import Path
 import importlib
+import json
 
-from framework.base_classes import Model, Retriever
+from framework.base_classes import Model, Retriever, Embedder
 from framework.helpers import remove_unwanted, discover
 
 
@@ -125,11 +126,15 @@ class Agent():
 # Main
 #user / Composition Root / Main
 def main():
+    embedders = {}
+    query_embeddings = {}
+
     #discover plugins
     discover("plugins/models/")
     discover("plugins/documents/")
     discover("plugins/loaders/")
     discover("plugins/parsers/")
+    discover("plugins/embedders")
     discover("plugins/retrievers/")
     discover("plugins/chunkers/")
     discover("plugins/preprocessors/")
@@ -150,23 +155,26 @@ def main():
     # embedders
     engine = config["sparse_embedder"]["engine"]
     if Embedder.registry[engine]:
-        self.embedders[engine] = Embedder.registry[engine](engine)
+        embedders[engine] = Embedder.registry[engine](engine)
     else:
         raise RuntimeError(
                 f"No embedder registered as {engine}"
                 )
     model_name = config["dense_embedder"]["model_name"]
     if Embedder.registry[model_name]:
-        self.embedders[model_name] = Embedder.registry[model_name](model_name)
+        embedders[model_name] = Embedder.registry[model_name](model_name)
     else:
         raise RuntimeError(
                 f"No embedder registered as {model_name}"
                 )
 
-    # embed query
-    for name,embedder in self.embedders:
-        embeddings[name] = embedder.embed(chunks)
-    print(embeddings)
+    # get query's
+    # sparse representation: term/token IDs mapped to weights.
+    # +
+    # dense embedding
+    for name,embedder in embedders.items():
+        query_embeddings[name] = embedder.embed(query)
+    print(query_embeddings)
 
     '''
     a.ask("Explain slicing.?")
