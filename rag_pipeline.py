@@ -5,7 +5,7 @@ from pathlib import Path
 import importlib
 import json
 
-from framework.base_classes import Model, Retriever, Embedder
+from framework.base_classes import Model, Retriever, Embedder, PreProcessor
 from framework.helpers import remove_unwanted, discover
 
 
@@ -128,12 +128,14 @@ class Agent():
 def main():
     embedders = {}
     query_embeddings = {}
+    preprocessor = None
 
     #discover plugins
     discover("plugins/models/")
     discover("plugins/documents/")
     discover("plugins/loaders/")
     discover("plugins/parsers/")
+    discover("plugins/preprocessors")
     discover("plugins/embedders")
     discover("plugins/retrievers/")
     discover("plugins/chunkers/")
@@ -150,9 +152,9 @@ def main():
     m = model(config["wanted_model"], config["wanted_mode"])
     a = Agent(m)
 
-    query = "What is the vacation policy?"
+    query = " What   is the vacation policy?, "
 
-    # embedders
+    # need embedders
     engine = config["sparse_embedder"]["engine"]
     if Embedder.registry[engine]:
         embedders[engine] = Embedder.registry[engine](engine)
@@ -167,6 +169,20 @@ def main():
         raise RuntimeError(
                 f"No embedder registered as {model_name}"
                 )
+
+    # need preprocessors
+    preprocessor_type = config["preprocessor_type"]
+    if PreProcessor.registry[preprocessor_type]:
+        preprocessor = PreProcessor.registry[preprocessor_type](preprocessor_type=preprocessor_type)
+    else:
+        raise RuntimeError(
+                f"No preprocessor plugin registered as {preprocessor_type}"
+                )
+
+    # get query preprocessed
+    print(query)
+    query = preprocessor.preprocess(query)
+    print(query)
 
     # get query's
     # sparse representation: term/token IDs mapped to weights.
