@@ -71,6 +71,13 @@ class PdfDocument(Document, document_type='pdf'):
             #store embedding
             self.storer.store_vector(chunk_id, embedding.embeddings[0])
         return
+    def retrieve(self, chunk: str):
+        # retrieve all chunks
+        # [(chunk_id, doc_id, chunk), (chunk_id, doc_id, chunk)]
+        chunks = self.storer.get_chunks()
+        # retrieve all nomic embeddings
+        # call each type retriever
+
 
     '''
     def store_embedding(self, vecs: list):

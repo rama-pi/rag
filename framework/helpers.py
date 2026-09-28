@@ -1,6 +1,6 @@
-import os, sys, json, re, string
-import importlib
+import os, sys, json, re, string, importlib
 from pathlib import Path
+import numpy as np
 
 class ExistsCheck:
     def __eq__(self, other):
@@ -13,6 +13,13 @@ class ExistsCheck:
 # Define your keyword
 EXISTS = ExistsCheck()
 
+'''
+ remove these words from chunks and query.
+ these don;t contribute any to similarity computation.
+ benefits:
+   - either frquency or nomic embedding will be quicker
+   - storage space
+'''
 ignore_words = {
         "the",
         "a",
@@ -58,6 +65,10 @@ def remove_unwanted(chunk: str):
     # return preprocessed chunk
     return chunk
 
+def cosine_similarity(vector1, vector2):
+    return np.dot(vector1, vector2) / (
+        np.linalg.norm(vector1) * np.linalg.norm(vector2)
+    )
 
 """
     Dynamically loads all Python modules in a given plugins subfolder.

@@ -158,6 +158,7 @@ class SQLiteStorer(Storer, storage_type="sqlite"):
         return generated_id
     def get_chunks(self, doc_id: int | None = None):
         # ret chunks of doc_id doc
+        # or all chunks of all docs if doc_id None
         rows = self.db_conn.execute(
             """
             SELECT chunk_id, doc_id, chunk from chunks WHERE (:doc_id IS NULL OR doc_id = :doc_id)
@@ -194,6 +195,16 @@ class SQLiteStorer(Storer, storage_type="sqlite"):
                 ).fetchone()
         unpacked_vec = struct.unpack(f"{packed_vec[0]}f", packed_vec[1])
         return unpacked_vec
+    def get_vectors(self):
+        l = []
+        packed_vecs = self.cur.execute(
+                """
+                SELECT vec_len, embedding FROM vec_chunks
+                """
+                ).fetchall()
+        for packed_vec in packed_vecs:
+            l.append(struct.unpack(f"{packed_vec[0]}f", packed_vec[1]))
+        return l
     def query(self, query_vec: list):
         results = self.db_conn.execute(
                 """

@@ -172,6 +172,10 @@ class Document(ABC):
     @abstractmethod
     def get_chunks(self, doc_id: int | None = None):
         pass
+
+    @abstractmethod
+    def retrieve(self, chunk: str):
+        pass
     '''
     @abstractmethod
     def query(self, chunk: str):
@@ -304,6 +308,9 @@ class Storer(ABC):
         pass
     @abstractmethod
     def get_vector(self, chunk_id: int) -> list:
+        pass
+    @abstractmethod
+    def get_vectors(self):
         pass
     def transaction(self):
         pass

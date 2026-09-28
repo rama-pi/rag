@@ -6,7 +6,11 @@ from collections import Counter
 import numpy as np
 
 from framework.base_classes import Retriever
+from framework.helpers import cosine_similarity
 
+'''
+ return N ranked chunks using vocabulary-frequency vectors and cosine similarity.
+'''
 class EnhancedSimilarityRetriever(Retriever, retriever_name="enhanced_similarity_retriever"):
     def __init__(self):
         self.nlp = spacy.load("en_core_web_sm")
@@ -37,12 +41,12 @@ class EnhancedSimilarityRetriever(Retriever, retriever_name="enhanced_similarity
     @staticmethod
     def calculate_enhanced_similarity(self, text1, text2):
         # Preprocess and tokenize texts and reduce to lemma's
-        words1 = self.preprocess_text(self, text1)
-        words2 = self.preprocess_text(self, text2)
+        words1 = self.preprocess_text(text1)
+        words2 = self.preprocess_text(text2)
 
         # Expand with synonyms
-        words1_expanded = self.expand_with_synonyms(self, words1)
-        words2_expanded = self.expand_with_synonyms(self, words2)
+        words1_expanded = self.expand_with_synonyms(words1)
+        words2_expanded = self.expand_with_synonyms(words2)
 
         # Count word frequencies
         freq1 = Counter(words1_expanded)
@@ -56,15 +60,34 @@ class EnhancedSimilarityRetriever(Retriever, retriever_name="enhanced_similarity
         vector2 = [freq2[word] for word in unique_words]
 
         # Calculate cosine similarity
-        cosine_similarity = np.dot(vector1, vector2) / (np.linalg.norm(vector1) * np.linalg.norm(vector2))
-        return cosine_similarity
-    def retrieve(self, text1, text2):
-        cs =  self.calculate_enhanced_similarity(self,text1, text2)
+        return cosine_similarity(vector1, vector2)
+        '''
+        calculate cosine similarity between given 2 chunks.
+        normally one is stored chunk of doc, other is query chunk
+        '''
+    def retrieve(self, chunk: str, chunks: list, top_n: int):
+        d = {}
+        # get cosine pair
+        for (chunk_id, doc_id, chunk) in chunks:
+            cos_sim =  self.calculate_enhanced_similarity(chunk, c)
+            d[chunk_id] = {
+                    "doc_id": doc_id,
+                    "chunk": chunk,
+                    "score": cos_sim
+                    }
+        top_n = sorted(
+                d.items(), key=lambda item: item[1]['score'], reverse=True
+        )[:top_n])
+
+        return top_n
+
+        '''
         if cs:
             return {"matched": True,
-                    "score": cs
+                    "score": cosSim
                     }
         else:
             return None
+        '''
 
 

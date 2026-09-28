@@ -1,3 +1,47 @@
+What should a retriever do:
+
+In a Retrieval-Augmented Generation (RAG) pipeline, the retriever is the core component responsible for searching an external knowledge 
+base and fetching the text chunks most relevant to a user's query.
+
+Core Responsibilities of a Retriever:-
+
+1⃣️  Query Processing: 
+	Takes the user's input string, converts it into a searchable format (such as a dense vector embedding), and prepares it to match 
+	against stored data.
+2⃣️  Searching External Memory: 
+	Queries external databases, vector stores, or hybrid search indexes where pre-chunked documents and metadata live outside the large 
+	language model's (LLM) parametric memory.
+3⃣️  Semantic Matching: 
+	Uses similarity metrics—like cosine similarity or approximate nearest neighbor (ANN) search—to locate contextually and semantically 
+	related information rather than relying strictly on exact keyword matches.
+4⃣️  Filtering and Ranking: 
+	Selects and filters the top-k candidate text chunks based on relevance scores or similarity thresholds, and optionally passes them 
+	through a re-ranker to prioritize the most useful context.
+5⃣️  Context Delivery: 
+	Packages and feeds the selected candidate text passages into the prompt so the generator model can formulate an accurate, grounded 
+	response.
+
+
+models diagree on step 5, mine suggest,
+
+Document.retrieve(query)
+        │
+        ▼
+     Retriever
+        │
+        ├─ query processing
+        ├─ search store(s)
+        ├─ semantic matching
+        ├─ filtering/ranking
+        └─ return top-N chunks
+        │
+        ▼
+Document / pipeline
+        │
+        ├─ combine retriever results (RRF)
+        ├─ build prompt context
+        └─ send context + query to LLM
+*******
 
 Core Mechanics of RAG Retrieval:
  The pipeline relies on converting unstructured data into a structured search ecosystem before a query is even executed:
@@ -140,4 +184,58 @@ Why Vector Search Alone Falls Short
     fails because it can only pull a handful of localized chunks.
   3⃣️ No Multi-Hop Reasoning: A vector database cannot natively execute logic like: Find X → look up X’s manufacturer → find where 
     that manufacturer is based → retrieve regulations for that region.
+
+Dot product:
+-----------
+	The dot product is a mathematical operation that takes two sequences of numbers (vectors) and combines them into a single 
+	number. It is needed because it provides a fast, direct measurement of how closely two vectors align in multi-dimensional
+	space.
+
+	## Why the Dot Product is Needed (Core Intuition):
+
+		* Measures Alignment: It multiplies matching dimensions and adds them up. If two vectors point in a similar direction,
+		  the result is highly positive. If they are perpendicular, the result is zero.
+		* Captures Relative Magnitude: Unlike purely angular metrics, the dot product factors in both the direction and the 
+		  length (magnitude) of the vectors.
+		* Hardware Efficiency: Modern processors and GPUs are physically designed to perform "multiply-and-add" operations 
+		  simultaneously. This makes the dot product incredibly fast to compute.
+
+	## How Dot Product Helps Find Similarities in RAG:
+	   In Retrieval-Augmented Generation (RAG), your text data and user queries are converted into dense mathematical vectors 
+	   (embeddings) using a model. Here is how the dot product powers the retrieval step:
+
+		* Semantic Matching: 
+			Text embedding models are trained so that pieces of text with similar meanings point in the 
+		  	same directional neighborhood. The dot product acts as a scoring system; the higher the dot product between 
+			a user query vector and a document chunk vector, the more semantically relevant they are.
+		* The "Cosine Similarity" Shortcut: 
+			If your embedding model outputs normalized vectors (vectors with a length/magnitude of exactly 1), the dot 
+			product becomes identical to cosine similarity. This lets vector databases rank millions of documents by 
+			semantic relevance using a single, blistering-fast matrix multiplication step.
+		* Keyword vs. Intent Capture: 
+			Because the dot product evaluates the embedding space rather than exact text strings, 
+			it successfully links a query like "How do I fix a flat tire?" to a document chunk reading "Steps to replace 
+			a ruptured vehicle tire," even though they share almost no identical words.
+
+	Ex:
+	   Suppose the shared vocabulary is: 
+	       			vacation   policy   holiday
+		vector1           1          1        1
+		vector2           1          2        0
+	   np.dot() product is:
+		= (1 × 1) + (1 × 2) + (1 × 0)
+		= 1 + 2 + 0
+		= 3   <= not being 0 means the two texts have overlapping word-frequency mass.
+	   For every word position, multiply the frequency in text 1 by the frequency of that same word in text 2, then add all those 
+	   products.
+
+	The dot product alone is not sufficient.
+	cosine similarity goes 1 step further.
+	                 	    vector1 · vector2                     np.dot() produced
+			cosine = ─────────────────────────────── =      ──────────────────── 
+         			  ||vector1|| × ||vector2||               np.linalg() produced
+			magnitude is:
+				  ∥vector∥ = √(a² + b² + c² + d²)
+				  a, b, c, d are vocab/word frequencies
+				  ||vector1|| tells us how large the vector is, considering all of its word-frequency v
 
