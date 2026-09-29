@@ -11,10 +11,36 @@ from framework.helpers import remove_unwanted, discover
 
 config = {
     "wanted_model": "llama3.2",
-    "wanted_mode" : "stream",
-    "history_file": "history.json",
+    "wanted_mode": "stream",
+    "sparse_embedder": {
+        "engine": "BM25",
+        "parameters": {
+            "k1": 1.2,
+            "b": 0.75
+        }
+    },
+    "dense_embedder": {
+        "model_name": "nomic-embed-text",
+        "dimensions": 768
+    },
+    "loader_type": "pdf",
+    "preprocessor_type": "preprocess",
+    "chunker_type": "recursive",
+    "parser_type": "pdf",
+    "storage_type": "sqlite",
+    "storage_name": "rag_collection.db",
     "conversation_size": 10,
-    "search_type" : "re",
+    "search_type": "re",
+    "cosine_similarity_retrievers": [
+            {
+                    "name": "enhanced_similarity_retriever",
+                    "type": "sparse"
+            },
+            {
+                    "name": "dense_similarity_retriever",
+                    "type": "dense"
+            }
+    ]
 }
 
 def load_config():
@@ -31,8 +57,8 @@ def load_config():
               Please review the file and run the program again.
               """)
         sys.exit(1)
-    except:
-        print(f"An error occurred:")
+    except Exception as e:
+        print(f"An error occurred:{e}")
         sys.exit(1)
 
 class ConversationBuilder():
@@ -184,6 +210,9 @@ def main():
     query = preprocessor.preprocess(query)
     print(query)
 
+    doc.retrieve(query);
+
+    '''
     # get query's
     # sparse representation: term/token IDs mapped to weights.
     # +
@@ -192,7 +221,6 @@ def main():
         query_embeddings[name] = embedder.embed(query)
     print(query_embeddings)
 
-    '''
     a.ask("Explain slicing.?")
     a.ask("what is ndarray?")
     a.ask("give me another example and put a marker like %%%%%")

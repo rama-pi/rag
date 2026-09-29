@@ -17,7 +17,7 @@ class DenseSimilarityRetriever(Retriever, retriever_name="dense_similarity_retri
                     }
         top_n = sorted(
                 d.items(), key=lambda item: item[1]['score'], reverse=True
-        )[:top_n])
+        )[:top_n]
 
         return top_n
 

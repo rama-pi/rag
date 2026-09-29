@@ -40,8 +40,9 @@ class Document(ABC):
         self.loader = None
         self.parser = None
         self.chunker = None
-        self.embedders = {}
         self.preprocessor = None
+        self.embedders = {}
+        self.retrievers = []
         self.pages = []
         self.config = config
 
@@ -61,6 +62,14 @@ class Document(ABC):
         else:
             raise RuntimeError(
                     f"No parser plugin registered as {parser_type}"
+                    )
+        # preprocessor
+        preprocessor_type = config["preprocessor_type"]
+        if PreProcessor.registry[preprocessor_type]:
+            self.preprocessor = PreProcessor.registry[preprocessor_type](preprocessor_type=preprocessor_type)
+        else:
+            raise RuntimeError(
+                    f"No preprocessor plugin registered as {preprocessor_type}"
                     )
 
         # Chunker
@@ -94,14 +103,18 @@ class Document(ABC):
             raise RuntimeError(
                     f"No storer plugin registered as {storage_type}"
                     )
-        # preprocessor
-        preprocessor_type = config["preprocessor_type"]
-        if PreProcessor.registry[preprocessor_type]:
-            self.preprocessor = PreProcessor.registry[preprocessor_type](preprocessor_type=preprocessor_type)
-        else:
-            raise RuntimeError(
-                    f"No preprocessor plugin registered as {preprocessor_type}"
-                    )
+        # Retrievers
+        retrievers = config["cosine_similarity_retrievers"]
+        for retriver in retrievers:
+            if Retriever.registry[retriever['name']]:
+                self.retrievers.append({
+                    'retriever':Retrievers.registry[retriver['name']](retriever_name=retriver),
+                    'type':retriever['type']
+                    })
+            else:
+                raise RuntimeError(
+                        f"No retriever plugin registered as {retriever}"
+                        )
 
     @classmethod
     def open(cls, path: str|Path, config: dict):

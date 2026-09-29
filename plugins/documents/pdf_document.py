@@ -76,8 +76,13 @@ class PdfDocument(Document, document_type='pdf'):
         # [(chunk_id, doc_id, chunk), (chunk_id, doc_id, chunk)]
         chunks = self.storer.get_chunks()
         # retrieve all nomic embeddings
+        nomic_embeds = self.storer.get_vectors()
         # call each type retriever
-
+        for retriever,v  in self.retrivers:
+            if retriever['type'] == 'sparse':
+                retriever['retriever'].retrieve(chunk, chunks)
+            if retriever['type'] == 'dense':
+                retriever['retriever'].retrieve(chunk, nomic_emveds)
 
     '''
     def store_embedding(self, vecs: list):

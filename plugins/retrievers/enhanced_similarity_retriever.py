@@ -77,7 +77,7 @@ class EnhancedSimilarityRetriever(Retriever, retriever_name="enhanced_similarity
                     }
         top_n = sorted(
                 d.items(), key=lambda item: item[1]['score'], reverse=True
-        )[:top_n])
+        )[:top_n]
 
         return top_n
 
