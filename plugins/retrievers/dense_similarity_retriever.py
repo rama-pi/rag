@@ -4,7 +4,8 @@ from framework.base_classes import Retriever
 from framework.helpers import cosine_similarity
 
 class DenseSimilarityRetriever(Retriever, retriever_name="dense_similarity_retriever"):
-    def __init__(self):
+    def __init__(self, retriever_name):
+        self.name = retriever_name
         return
     def retrieve(self, vector: list, vectors: list, chunks: list, top_n: int):
         d = {}

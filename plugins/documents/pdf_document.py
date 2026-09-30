@@ -47,9 +47,15 @@ class PdfDocument(Document, document_type='pdf'):
     def store_document(self, document_name: str, mdata: str, fhash: str):
         return self.storer.store_document(document_name, mdata, fhash)
     def store_chunks(self, doc_id: int, chunks: list):
+        '''
         return self.storer.store_chunks(doc_id, chunks)
+        '''
+        return super().store_chunks(doc_id, chunks)
     def get_chunks(self, doc_id: int | None = None):
+        '''
         return self.storer.get_chunks(doc_id)
+        '''
+        return super().get_chunks(doc_id)
 
     def embed(self, chunk: list):
         embeddings = {} # key = embed model value = embedding/s
@@ -61,28 +67,35 @@ class PdfDocument(Document, document_type='pdf'):
         return self.preprocessor.preprocess(chunk)
 
     def store_and_embed_chunks(self, doc_id: int, chunks: list):
+        '''
         # store chunks, make embedding (dense) per chunk, store chunk's embedding
         # model name of the embedder
         model_name = self.config["dense_embedder"]["model_name"]
         for chunk in chunks:
             #store chunk
             chunk_id = self.storer.store_chunk(doc_id, chunk)
+            #create embedding
             embedding = self.embedders[model_name].embed(chunk)
             #store embedding
             self.storer.store_vector(chunk_id, embedding.embeddings[0])
         return
+        '''
+        return super().store_and_embed_chunks(doc_id, chunks)
     def retrieve(self, chunk: str):
+        '''
         # retrieve all chunks
         # [(chunk_id, doc_id, chunk), (chunk_id, doc_id, chunk)]
         chunks = self.storer.get_chunks()
         # retrieve all nomic embeddings
         nomic_embeds = self.storer.get_vectors()
-        # call each type retriever
-        for retriever,v  in self.retrivers:
+        # call each type retriever, each returns a score against the query chunk
+        for retriever,v  in self.retrievers:
             if retriever['type'] == 'sparse':
                 retriever['retriever'].retrieve(chunk, chunks)
             if retriever['type'] == 'dense':
-                retriever['retriever'].retrieve(chunk, nomic_emveds)
+                retriever['retriever'].retrieve(chunk, nomic_emeds)
+        '''
+        return super.retrieve(chunk)
 
     '''
     def store_embedding(self, vecs: list):

@@ -105,10 +105,10 @@ class Document(ABC):
                     )
         # Retrievers
         retrievers = config["cosine_similarity_retrievers"]
-        for retriver in retrievers:
+        for retriever in retrievers:
             if Retriever.registry[retriever['name']]:
                 self.retrievers.append({
-                    'retriever':Retrievers.registry[retriver['name']](retriever_name=retriver),
+                    'retriever':Retriever.registry[retriever['name']](retriever_name=retriever['name']),
                     'type':retriever['type']
                     })
             else:
@@ -181,14 +181,46 @@ class Document(ABC):
         pass
     @abstractmethod
     def store_chunks(self, doc_id: int, chunks: list):
+        '''
         pass
+        '''
+        return self.storer.store_chunks(doc_id, chunks)
     @abstractmethod
     def get_chunks(self, doc_id: int | None = None):
+        '''
         pass
+        '''
+        return self.storer.get_chunks(doc_id)
 
     @abstractmethod
+    def store_and_embed_chunks(self, doc_id: int, chunks: list):
+        # store chunks, make embedding (dense) per chunk, store chunk's embedding
+        # model name of the embedder
+        model_name = self.config["dense_embedder"]["model_name"]
+        for chunk in chunks:
+            #store chunk
+            chunk_id = self.storer.store_chunk(doc_id, chunk)
+            #create embedding
+            embedding = self.embedders[model_name].embed(chunk)
+            #store embedding
+            self.storer.store_vector(chunk_id, embedding.embeddings[0])
+        return
+    @abstractmethod
     def retrieve(self, chunk: str):
+        '''
         pass
+        '''
+        # retrieve all chunks
+        # [(chunk_id, doc_id, chunk), (chunk_id, doc_id, chunk)]
+        chunks = self.storer.get_chunks()
+        # retrieve all nomic embeddings
+        nomic_embeds = self.storer.get_vectors()
+        # call each type retriever, each returns a score against the query chunk
+        for retriever,v  in self.retrievers:
+            if retriever['type'] == 'sparse':
+                retriever['retriever'].retrieve(chunk, chunks)
+            if retriever['type'] == 'dense':
+                retriever['retriever'].retrieve(chunk, nomic_emeds)
     '''
     @abstractmethod
     def query(self, chunk: str):
@@ -286,13 +318,13 @@ class PreProcessor(ABC):
 class Retriever(ABC):
     registry = {}
 
-    @abstractmethod
-    def retrieve(self, past_q_w: list, curr_q_w: list):
-        pass
     def __init_subclass__(cls, retriever_name=None, **kwargs):
         super().__init_subclass__(**kwargs)
         cls.retriever_name = retriever_name
         Retriever.registry[retriever_name] = cls
+    @abstractmethod
+    def retrieve(self, past_q_w: list, curr_q_w: list):
+        pass
 
 class Embedder(ABC):
     registry = {}

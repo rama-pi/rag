@@ -12,7 +12,8 @@ from framework.helpers import cosine_similarity
  return N ranked chunks using vocabulary-frequency vectors and cosine similarity.
 '''
 class EnhancedSimilarityRetriever(Retriever, retriever_name="enhanced_similarity_retriever"):
-    def __init__(self):
+    def __init__(self, retriever_name):
+        self.name = retriever_name
         self.nlp = spacy.load("en_core_web_sm")
         return
     @staticmethod
