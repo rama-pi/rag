@@ -118,7 +118,14 @@ class Document(ABC):
 
     @classmethod
     def open(cls, path: str|Path, config: dict):
-        doc_type = Path(path).suffix.lower().lstrip(".")
+
+        """
+            support of doc type None for access to api
+        """
+        if path is None:
+            doc_type = "none"
+        else:
+            doc_type = Path(path).suffix.lower().lstrip(".")
 
         try:
             doc_cls = cls.registry[doc_type]
@@ -126,8 +133,12 @@ class Document(ABC):
             raise RuntimeError(
                     f"No Document plugin registered for '{doc_type}'"
                     )
+
         doc = doc_cls(document_type='pdf', config=config)
-        doc.load(path)
+        if path is not None:
+            # load the document
+            doc.load(path)
+
         return doc
     @abstractmethod
     def load(self, path: str|Path):

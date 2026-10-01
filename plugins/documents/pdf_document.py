@@ -39,13 +39,17 @@ class PdfDocument(Document, document_type='pdf'):
     def dump_pages(self):
         self.parser.dump_pages(self.pages)
 
-    def chunk(self, segment: str):
-        return self.chunker.chunk(segment)
+
+    def preprocess(self, chunk: str):
+        return self.preprocessor.preprocess(chunk)
 
     def transaction(self):
         return self.storer.transaction()
+
     def store_document(self, document_name: str, mdata: str, fhash: str):
         return self.storer.store_document(document_name, mdata, fhash)
+    def chunk(self, segment: str):
+        return self.chunker.chunk(segment)
     def store_chunks(self, doc_id: int, chunks: list):
         '''
         return self.storer.store_chunks(doc_id, chunks)
@@ -63,8 +67,6 @@ class PdfDocument(Document, document_type='pdf'):
             embeddings[name] = embedder.embed(chunks)
         return embeddings
 
-    def preprocess(self, chunk: str):
-        return self.preprocessor.preprocess(chunk)
 
     def store_and_embed_chunks(self, doc_id: int, chunks: list):
         '''
