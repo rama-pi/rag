@@ -5,7 +5,7 @@ from pathlib import Path
 import importlib
 import json
 
-from framework.base_classes import Model, Retriever, Embedder, PreProcessor
+from framework.base_classes import Document, Model, Retriever, Embedder, PreProcessor
 from framework.helpers import remove_unwanted, discover
 
 
@@ -40,7 +40,9 @@ config = {
                     "name": "dense_similarity_retriever",
                     "type": "dense"
             }
-    ]
+    ],
+    "top_n": 5,
+    "history_file": "history.json"
 }
 
 def load_config():
@@ -159,6 +161,7 @@ def main():
     #discover plugins
     discover("plugins/models/")
     discover("plugins/documents/")
+    discover("plugins/storers/")
     discover("plugins/loaders/")
     discover("plugins/parsers/")
     discover("plugins/preprocessors")
@@ -180,6 +183,11 @@ def main():
 
     query = " What   is the vacation policy?, "
 
+    # open None Doc to get API access
+    doc = Document.open(None, config)
+    print(doc.retrieve(query, config['top_n']))
+
+    '''
     # need embedders
     engine = config["sparse_embedder"]["engine"]
     if Embedder.registry[engine]:
@@ -211,6 +219,7 @@ def main():
     print(query)
 
     doc.retrieve(query);
+    '''
 
     '''
     # get query's

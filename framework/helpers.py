@@ -2,6 +2,14 @@ import os, sys, json, re, string, importlib
 from pathlib import Path
 import numpy as np
 
+import spacy
+import nltk
+nltk.download('wordnet')
+from nltk.corpus import wordnet
+from collections import Counter
+import numpy as np
+
+
 class ExistsCheck:
     def __eq__(self, other):
         # SQL returned None means the document already exists!
@@ -69,6 +77,49 @@ def cosine_similarity(vector1, vector2):
     return np.dot(vector1, vector2) / (
         np.linalg.norm(vector1) * np.linalg.norm(vector2)
     )
+def get_synonyms(word):
+    synonyms = set()
+    for syn in wordnet.synsets(word):
+        for lemma in syn.lemmas():
+            synonyms.add(lemma.name())
+    return synonyms
+def expand_with_synonyms(words):
+    expanded_words = words.copy()
+    for word in words:
+        expanded_words.extend(get_synonyms(word))
+    return expanded_words
+def preprocess_text(text):
+    # filter out punctuations, stop words, reduce each words to its lemma
+    nlp = spacy.load("en_core_web_sm")
+    doc = nlp(text.lower())
+    lemmatized_words = []
+    for token in doc:
+        if token.is_stop or token.is_punct:
+            continue
+        lemmatized_words.append(token.lemma_)
+    return lemmatized_words
+def calculate_enhanced_similarity(text1, text2):
+    # Preprocess and tokenize texts and reduce to lemma's
+    words1 = preprocess_text(text1)
+    words2 = preprocess_text(text2)
+
+    # Expand with synonyms
+    words1_expanded = expand_with_synonyms(words1)
+    words2_expanded = expand_with_synonyms(words2)
+
+    # Count word frequencies
+    freq1 = Counter(words1_expanded)
+    freq2 = Counter(words2_expanded)
+
+    # Create a set of all unique words
+    unique_words = set(freq1.keys()).union(set(freq2.keys()))
+
+    # Create frequency vectors
+    vector1 = [freq1[word] for word in unique_words]
+    vector2 = [freq2[word] for word in unique_words]
+
+    # Calculate cosine similarity
+    return cosine_similarity(vector1, vector2)
 
 """
     Dynamically loads all Python modules in a given plugins subfolder.

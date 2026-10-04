@@ -7,10 +7,16 @@ class DenseSimilarityRetriever(Retriever, retriever_name="dense_similarity_retri
     def __init__(self, retriever_name):
         self.name = retriever_name
         return
-    def retrieve(self, vector: list, vectors: list, chunks: list, top_n: int):
+    def retrieve(self, qvector: list, docvectors: list, docchunks: list, top_n: int):
         d = {}
-        for vec, (chunk_id, doc_id, chunk) in zip(vectors, chunks):
-            cos_sim = cosine_similarity(vector, vec)
+        for vec, (chunk_id, doc_id, chunk) in zip(docvectors, docchunks):
+            '''
+            print(type(qvector), " ", type(vec))
+            print(qvector)
+            print("\n\n\n\n")
+            print(vec)
+            '''
+            cos_sim = cosine_similarity(qvector, vec)
             d[chunk_id] = {
                     "doc_id": doc_id,
                     "chunk": chunk,

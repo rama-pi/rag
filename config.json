@@ -30,5 +30,6 @@
                     "type": "dense"
             }
     ],
+    "top_n": 5,
     "history_file": "history.json"
 }

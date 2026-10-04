@@ -36,6 +36,12 @@ class Model(ABC):
 class Document(ABC):
     registry = {}
 
+    def __init_subclass__(cls, document_type=None, **kwargs):
+        # this runs earlier that __init__
+        super.__init_subclass__(**kwargs)
+        cls.document_type = document_type
+        Document.registry[document_type] = cls
+
     def __init__(self, config: dict):
         self.loader = None
         self.parser = None
@@ -116,6 +122,7 @@ class Document(ABC):
                         f"No retriever plugin registered as {retriever}"
                         )
 
+
     @classmethod
     def open(cls, path: str|Path, config: dict):
 
@@ -123,7 +130,7 @@ class Document(ABC):
             support of doc type None for access to api
         """
         if path is None:
-            doc_type = "none"
+            doc_type = "null"
         else:
             doc_type = Path(path).suffix.lower().lstrip(".")
 
@@ -134,7 +141,7 @@ class Document(ABC):
                     f"No Document plugin registered for '{doc_type}'"
                     )
 
-        doc = doc_cls(document_type='pdf', config=config)
+        doc = doc_cls(document_type=doc_type, config=config)
         if path is not None:
             # load the document
             doc.load(path)
@@ -217,31 +224,32 @@ class Document(ABC):
             self.storer.store_vector(chunk_id, embedding.embeddings[0])
         return
     @abstractmethod
-    def retrieve(self, chunk: str):
+    def retrieve(self, qchunk: str, top_n: int):
         '''
         pass
         '''
+        qembed = None
         # retrieve all chunks
         # [(chunk_id, doc_id, chunk), (chunk_id, doc_id, chunk)]
-        chunks = self.storer.get_chunks()
+        doc_chunks = self.storer.get_chunks()
         # retrieve all nomic embeddings
-        nomic_embeds = self.storer.get_vectors()
+        doc_embeds = self.storer.get_vectors()
+        # dense embed the qchunk
+        for name,embedder in self.embedders.items():
+            if name == "nomic-embed-text":
+                qembed = embedder.embed(qchunk)['embeddings'][0]
         # call each type retriever, each returns a score against the query chunk
-        for retriever,v  in self.retrievers:
+        for retriever in self.retrievers:
             if retriever['type'] == 'sparse':
-                retriever['retriever'].retrieve(chunk, chunks)
+                print(retriever['retriever'].retrieve(qchunk, doc_chunks, top_n))
             if retriever['type'] == 'dense':
-                retriever['retriever'].retrieve(chunk, nomic_emeds)
+                print(retriever['retriever'].retrieve(qembed, doc_embeds, doc_chunks, top_n))
     '''
     @abstractmethod
     def query(self, chunk: str):
         pass
     '''
 
-    def __init_subclass__(cls, document_type=None, **kwargs):
-        super.__init_subclass__(**kwargs)
-        cls.document_type = document_type
-        Document.registry[document_type] = cls
 
 class Loader(ABC):
     registry = {}

@@ -83,7 +83,7 @@ class PdfDocument(Document, document_type='pdf'):
         return
         '''
         return super().store_and_embed_chunks(doc_id, chunks)
-    def retrieve(self, chunk: str):
+    def retrieve(self, qchunk: str, top_n: int):
         '''
         # retrieve all chunks
         # [(chunk_id, doc_id, chunk), (chunk_id, doc_id, chunk)]
@@ -97,7 +97,7 @@ class PdfDocument(Document, document_type='pdf'):
             if retriever['type'] == 'dense':
                 retriever['retriever'].retrieve(chunk, nomic_emeds)
         '''
-        return super.retrieve(chunk)
+        return super().retrieve(qchunk, top_n)
 
     '''
     def store_embedding(self, vecs: list):

@@ -9,29 +9,39 @@ from framework.helpers import discover, EXISTS
 from framework.base_classes import Document
 
 config = {
-    "wanted_model"     : "llama3.2",
-    "sparse_embedder": {
-        "engine": "BM25",
-        "parameters": {
-            "k1": 1.2,
-            "b": 0.75
-            }
-        },
-    "dense_embedder": {
-        "model_name": "nomic-embed-text",
-        "dimensions": 768
-        },
-    "storage_type"     : "sqlite",
-    "storage_name"     : "rag_collection.db",
-    "wanted_mode"      : "stream",
-    "history_file"     : "history.json",
-    "conversation_size": 10,                # limit to smaller than models context window size
-    "search_type"      : "re",
-    "loader_type"      : "pdf",
-    "parser_type"      : "pdf",
-    "chunker_type"     : "recursive",
-    "preprocessor_type": "preprocess",
-    "ingest_docs"      : "./ingest_docs"
+        "wanted_model": "llama3.2",
+        "wanted_mode": "stream",
+        "sparse_embedder": {
+            "engine": "BM25",
+            "parameters": {
+                "k1": 1.2,
+                "b": 0.75
+                }
+            },
+        "dense_embedder": {
+            "model_name": "nomic-embed-text",
+            "dimensions": 768
+            },
+        "loader_type": "pdf",
+        "preprocessor_type": "preprocess",
+        "chunker_type": "recursive",
+        "parser_type": "pdf",
+        "storage_type": "sqlite",
+        "storage_name": "rag_collection.db",
+        "conversation_size": 10,
+        "search_type": "re",
+        "cosine_similarity_retrievers": [
+            {
+                "name": "enhanced_similarity_retriever",
+                "type": "sparse"
+                },
+            {
+                "name": "dense_similarity_retriever",
+                "type": "dense"
+                }
+            ],
+        "top_n": 5,
+        "history_file": "history.json"
 }
 
 # keep opened docs  their id, name, onj
