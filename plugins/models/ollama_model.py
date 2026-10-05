@@ -1,4 +1,6 @@
 from abc import ABC, abstractmethod
+from requests.models import Response
+import requests
 
 import ollama
 
@@ -12,6 +14,19 @@ class OllamaModel(Model, model_name="llama3.2", model_modes=['stream', 'nostream
     def __init__(self, model_name, model_mode):
         self.model_name = model_name
         self.model_mode = model_mode
+        # grab the model parameters
+        response = None
+        try:
+            response = requests.post(
+                "http://localhost:11434/api/show",
+                json={"model": "llama3.2"
+                      }
+                )
+            response.raise_for_status()
+        except requests.RequestException as e:
+            print(f"An exception {e} happened while getting {self.model_name} params")
+        if response is not None:
+            self.context_size = response.json()['model_info']['llama.context_length']
     def ask(self, messages):
         answer = ''
         if self.model_mode == 'stream':

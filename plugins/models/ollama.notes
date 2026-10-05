@@ -1,10 +1,52 @@
 
 supported models:
 ----------------
-Ollama
-│
-├── llama3.2
-├── qwen3
-├── deepseek-r1
-├── nomic-embed-text   ← embedding model
-└── ...
+	Ollama
+	│
+	├── llama3.2
+	├── qwen3
+	├── deepseek-r1
+	├── nomic-embed-text   ← embedding model
+	└── ...
+
+
+stop sequences:
+--------------
+	"When generation reaches one of these special tokens, stop generating."
+		stop	<|start_header_id|>
+		stop	<|end_header_id|>
+		stop	<|eot_id|>
+Model info: sample
+----------
+	{
+		'general.architecture': 'llama',
+		'general.basename': 'Llama-3.2',
+		'general.file_type': 15,
+		'general.finetune': 'Instruct',
+ 		'general.languages': None,
+ 		'general.parameter_count': 3212749888,
+ 		'general.quantization_version': 2,
+ 		'general.size_label': '3B',
+ 		'general.tags': None,
+ 		'general.type': 'model',
+ 		'llama.attention.head_count': 24,
+ 		'llama.attention.head_count_kv': 8,
+ 		'llama.attention.key_length': 128,
+ 		'llama.attention.layer_norm_rms_epsilon': 1e-05,
+ 		'llama.attention.value_length': 128,
+ 		'llama.block_count': 28,
+ 		'llama.context_length': 131072,		<- This is the model's maximum context window — 
+							   the amount of tokenized input/context the model can handle in a single context.
+ 		'llama.embedding_length': 3072,
+ 		'llama.feed_forward_length': 8192,
+ 		'llama.rope.dimension_count': 128,
+ 		'llama.rope.freq_base': 500000,
+ 		'llama.vocab_size': 128256,
+ 		'tokenizer.ggml.bos_token_id': 128000,
+ 		'tokenizer.ggml.eos_token_id': 128009,
+ 		'tokenizer.ggml.merges': None,
+ 		'tokenizer.ggml.model': 'gpt2',
+ 		'tokenizer.ggml.pre': 'llama-bpe',
+ 		'tokenizer.ggml.token_type': None,
+ 		'tokenizer.ggml.tokens': None
+	}

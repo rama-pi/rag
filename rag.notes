@@ -561,4 +561,11 @@ Note:
 		* Latency/cost — more context generally means more tokens processed.
 		- Relevance/noise — too many chunks can dilute the useful information.
 
+
+	Sparse ── top_N ──┐
+       	                  ├── RRF ──→ top_K ──→ prompt ──→ LLM
+	Dense  ── top_N ──┘
+
+	usually top_N ≥ top_K
+
 _____________________________________________________________________________________________________________________________________________
