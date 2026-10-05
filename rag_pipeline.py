@@ -42,7 +42,8 @@ config = {
             }
     ],
     "top_n": 5,
-    "history_file": "history.json"
+    "history_file": "history.json",
+    "rrf_smoothing_param": 60
 }
 
 def load_config():

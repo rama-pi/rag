@@ -1,6 +1,7 @@
 from abc import ABC, abstractmethod
 from pathlib import Path
 from builtins import RuntimeError
+import json
 
 
 
@@ -241,9 +242,49 @@ class Document(ABC):
         # call each type retriever, each returns a score against the query chunk
         for retriever in self.retrievers:
             if retriever['type'] == 'sparse':
-                print(retriever['retriever'].retrieve(qchunk, doc_chunks, top_n))
+                cs_ordered_score1 = retriever['retriever'].retrieve(qchunk, doc_chunks, top_n)
             if retriever['type'] == 'dense':
-                print(retriever['retriever'].retrieve(qembed, doc_embeds, doc_chunks, top_n))
+                cs_ordered_score2 = retriever['retriever'].retrieve(qembed, doc_embeds, doc_chunks, top_n)
+        # rrf 
+        # collect chunk ids from each retriever
+        k = self.config["rrf_smoothing_param"]
+
+        chunk_ids1 = set((i[0] for i in cs_ordered_score1))
+        chunk_ids2 = set((i[0] for i in cs_ordered_score2))
+
+        rank_list = []
+        #do rrf for chunks in both
+        for cid in chunk_ids1 & chunk_ids2:
+            r1 = [e for e, i in enumerate(cs_ordered_score1, start=1) if i[0] == cid][0]
+            r2 = [e for e, i in enumerate(cs_ordered_score2, start=1) if i[0] == cid][0]
+            rrf = 1.0/(k+r1) + 1.0/(k+r2)
+            rank_list.append(
+                    {'cid': cid,
+                     'rrf': rrf
+                     }
+                    )
+        # do rrf for chunks in only one
+        for cid in chunk_ids1-chunk_ids2:
+            r1 = [e for e, i in enumerate(cs_ordered_score1, start=1) if i[0] == cid][0]
+            rrf = 1.0/(k+r1)
+            rank_list.append(
+                    {'cid': cid,
+                     'rrf': rrf
+                     }
+                    )
+        # do rrf for chunks in only one
+        for cid in chunk_ids2-chunk_ids1:
+            r2 = [e for e, i in enumerate(cs_ordered_score2, start=1) if i[0] == cid][0]
+            rrf = 1.0/(k+r2)
+            rank_list.append(
+                    {'cid': cid,
+                     'rrf': rrf
+                     }
+                    )
+        # sort the rakings of the chunsk
+        rank_list = sorted(rank_list, key=lambda d: d['rrf'], reverse=True )
+        return rank_list
+
     '''
     @abstractmethod
     def query(self, chunk: str):

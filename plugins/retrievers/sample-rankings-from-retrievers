@@ -1,0 +1,16 @@
+[
+ (36, {'doc_id': 2, 'chunk': 'company guidelines policies and culture', 'score': np.float64(0.26995276239950855)}),
+ (89, {'doc_id': 3, 'chunk': 'company guidelines policies and culture', 'score': np.float64(0.26995276239950855)}),
+ (48, {'doc_id': 2, 'chunk': '2 primary employment policies', 'score': np.float64(0.2567762955065478)}),
+ (101, {'doc_id': 3, 'chunk': '2 primary employment policies', 'score': np.float64(0.2567762955065478)}),
+ (77, {'doc_id': 2, 'chunk': 'benefit categories eligibility  framework', 'score': np.float64(0.05439282932204212)})
+]
+
+
+[
+ (76, {'doc_id': 2, 'chunk': 'structured time off', 'score': np.float64(0.5282631251780844)}),
+ (129, {'doc_id': 3, 'chunk': 'structured time off', 'score': np.float64(0.5282631251780844)}),
+ (36, {'doc_id': 2, 'chunk': 'company guidelines policies and culture', 'score': np.float64(0.5207488478240653)}),
+ (89, {'doc_id': 3, 'chunk': 'company guidelines policies and culture', 'score': np.float64(0.5207488478240653)}),
+ (132, {'doc_id': 3, 'chunk': 'paid time off pto 17 standard days per calendar', 'score': np.float64(0.5088558879551984)})
+]
