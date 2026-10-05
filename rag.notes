@@ -240,6 +240,7 @@ milliseconds, even if the full response takes a while to complete.
 * Better User Experience (UX): It mimics human behavior, making your chatbot or AI assistant feel 
 alive and interactive.
 
+_____________________________________________________________________________________________________________________________________________
 
 Retrieval-Augmented Generation (RAG) is an AI technique that allows a Large Language Model (LLM) to 
 "look things up" in external, trusted data sources before answering a question. This grounds the AI's 
@@ -295,18 +296,7 @@ Cost Vs Where done Vs :-
 | LLM                | Every user query                       | Yes         | Highest  | Final answer               | Autoregressive generation|
  ----------------------------------------------------------------------------------------------------------------------------------------------
 
-Models Vs self-supervised :-
-+++++++++++++++++++++++++
-| Model Type                   | Typical Data                          | Can Use Self-Supervised Learning?    | Example                     |
-| ---------------------------- | ------------------------------------- | ------------------------------------ | --------------------------- |
-| Large Language Models (LLMs) | Text                                  | Yes                                  | GPT, Llama, Qwen            |
-| Multimodal Models            | Text + Images (sometimes audio/video) | Yes                                  | GPT-4o, Gemini, LLaVA, CLIP |
-| Weather Prediction Models    | Weather measurements                  | Usually **No** (not in the LLM sense)| Numerical weather models    |
-| Fraud Detection Models       | Transactions                          | Sometimes, but often supervised      | Banking fraud models        |
-| Medical Diagnosis Models     | Medical images, records               | Often supervised                     | Tumor detection             |
- --------------------------------------------------------------------------------------------------------------------------------------------
-
-***************************
+_____________________________________________________________________________________________________________________________________________
 
 BM25 (Best Matching 25) is a highly efficient, keyword-based text retrieval and ranking mechanism. 
 It is the industry standard algorithm for traditional lexical (keyword) search, famously powering the core search engine inside 
@@ -340,7 +330,7 @@ Because of this, modern enterprise RAG architectures use a Hybrid Search Pipelin
    2. Dense Embeddings grab documents with the conceptual meaning (Dense Retrieval).
    3. A Reranker combines both lists into a final top-K payload for the LLM. 
 
-*****************************
+_____________________________________________________________________________________________________________________________________________
 
 Yes, you can absolutely call your RAG architecture an Agent, but to be technically precise within modern AI engineering, it depends 
 on how much autonomy you give the system. If the system follows a fixed, linear pipeline—meaning it always takes a query, always runs 
@@ -370,7 +360,7 @@ The LLM sits at the core of the execution loop and controls your plugin framewor
               ▼        ▼        ▼
        [Tool: BM25] [Tool: Chroma] [Tool: Web API]
 
-*****************************
+_____________________________________________________________________________________________________________________________________________
 
 '''
 | Package      | Why                                                   | Dependencies                                               |
@@ -451,16 +441,17 @@ semantic vector math to save memory.
 | Dimensions      | fixed model dimension                    | vocabulary size                   |
 | Most dimensions | generally non-zero                       | mostly zero                       |
 
+_____________________________________________________________________________________________________________________________________________
 
 Dense → semantic meaning
 Sparse → lexical words
 
 
-Feature   |         Lexical                  |          Linguistic                      |
-----------|----------------------------------|------------------------------------------|
-Focus     | Vocabulary                       | The entire system of communication       |
-Component | Words, roots, prefixes, suffixes | Syntax, phonetics, semantics, morphology |
-Analogy   | Entries in a dictionary          | The rules of the whole language          |
+	Feature   |         Lexical                  |          Linguistic                      |
+	----------|----------------------------------|------------------------------------------|
+	Focus     | Vocabulary                       | The entire system of communication       |
+	Component | Words, roots, prefixes, suffixes | Syntax, phonetics, semantics, morphology |
+	Analogy   | Entries in a dictionary          | The rules of the whole language          |
 
 
 WordNet
@@ -472,72 +463,102 @@ each synset has lemmas
 same lemma may appear repeatedly
 
 '''
+_____________________________________________________________________________________________________________________________________________
+
 
 
 INGESTION
 ─────────
-Document
-   ↓
-Chunk
-   ↓
-Store chunks in SQL
-   ↓
-Generate embeddings for those chunks
-   ↓
-Store embeddings
+	Document
+   	↓
+	Chunk
+   	↓
+	Store chunks in SQL
+   	↓
+	Generate embeddings for those chunks
+   	↓
+	Store embeddings
 
 QUERY TIME
 ──────────
-User query
-    │
-    ├──────────────→ BM25 scoring
-    │                    │
-    │                    ↓
-    │              ranked chunk IDs
-    │
-    └──────────────→ embedding
-                         │
-                         ↓
-                    cosine similarity
-                         │
-                         ↓
-                   ranked chunk IDs
-                         │
-              ┌──────────┘
-              ↓
-             RRF
-              ↓
-       final ranked chunk IDs
-              ↓
-       retrieve chunk text
-              ↓
-        context for LLM
-              ↓
-             LLM
-              ↓
-            answer
+	User query
+    	│
+    	├──────────────→ BM25 scoring
+    	│                    │
+    	│                    ↓
+    	│              ranked chunk IDs
+    	│
+    	└──────────────→ embedding
+                             │
+                             ↓
+                    	cosine similarity
+                             │
+                             ↓
+                   	ranked chunk IDs
+                             │
+                  ┌──────────┘
+                  ↓
+             	 RRF
+              	  ↓
+       		final ranked chunk IDs
+              	  ↓
+       		retrieve chunk text
+              	  ↓
+        	context for LLM
+              	  ↓
+             	LLM
+              	 ↓
+            	answer
 
+OR
 
-query
-  │
-  ├───────────────────────────────┐
-  │                               │
-  ↓                               ↓
-get all chunks                 get all embeddings
-  │                               │
-  ↓                               ↓
-BM25 scoring                 cosine similarity
-  │                               │
-  ↓                               ↓
-top K chunk IDs              top K chunk IDs
-  │                               │
-  └───────────────┬───────────────┘
-                  ↓
-                 RRF
-                  ↓
-          final ranked chunk IDs
-                  ↓
-          retrieve chunk TEXT
-                  ↓
-                 LLM
+QUERY TIME
+──────────
+	User query
+  	│
+  	├───────────────────────────────┐
+  	│                               │
+  	↓                               ↓
+	get all chunks                 get all embeddings
+  	│                               │
+  	↓                               ↓
+	BM25 scoring                 cosine similarity
+  	│                               │
+  	↓                               ↓
+	top K chunk IDs              top K chunk IDs
+  	│                               │
+  	└───────────────┬───────────────┘
+                  	↓
+                 	RRF
+                  	↓
+          		final ranked chunk IDs
+                  	↓
+          		retrieve chunk TEXT
+                  	↓
+                 	LLM
 
+Note:
+ top_N:
+	. top_N = How wide should we search before fusion?
+	. top_N — candidate pool size per retriever
+	. Factors influencing top_N:
+		- Retriever recall — how likely the retriever is to put relevant chunks into its candidate list.
+		- Retriever quality — weaker retrieval may need a larger N.
+		- Chunk size — smaller chunks can require more candidates to capture enough relevant information.
+		- Number of retrievers — with sparse + dense retrieval, a larger candidate pool gives RRF more material to fuse.
+		- RRF overlap — if sparse and dense rankings overlap poorly, increasing N gives RRF more opportunity to find useful chunks.
+		- Computation/latency — larger N means more candidates to process and fuse.
+		- Noise — unnecessarily large N introduces more low-quality candidates.
+ top_K:
+	. top_K = final chunks passed onward
+	. top_K = How much retrieved information should we actually give the LLM?
+	. Factors influencing top_K:
+		- Question complexity — a simple question may need only a few chunks; a complex question may need more.
+		* Chunk size — larger chunks consume more context tokens.
+		* LLM context-window size — limits how much retrieved material can fit.
+		* Prompt size — system instructions + user question + retrieved chunks all consume context.
+		* Expected answer length — leave room for the LLM's response.
+		* Latency/cost — more context generally means more tokens processed.
+		- Relevance/noise — too many chunks can dilute the useful information.
+
+_____________________________________________________________________________________________________________________________________________
