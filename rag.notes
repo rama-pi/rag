@@ -569,3 +569,46 @@ Note:
 	usually top_N ≥ top_K
 
 _____________________________________________________________________________________________________________________________________________
+
+
+Production search sizing: How Big the prompt can be ?
+------------------------
+	 Figuring out how many RRF ranks and how much text fits into your model's context window is exactly how you prevent your RAG 
+	 system from blindly truncating data or crashing.
+
+	 To compute this accurately by hand, you need to understand the Mathematical Conversion Rates between raw PDF words, database rows, 
+	 and model tokens.
+
+	 📏 The Universal Translation Scale (The Math):
+	   • 1 Token approx 4 characters of English text.
+	   • 1 Token approx 0.75 words (or 1 word approx  1.33 tokens).
+           • ex: standard RAG chunk = 500 words approx 665 tokens.
+
+	 🧮 Calculating the Bounds Step-by-Step
+	    Let's assume your HTTP GET request told you that your running Ollama model has a standard base context size of 4,096 tokens.
+
+	    Step 1: Dedicate space for your "Fixed Overhead"
+		    An LLM prompt doesn't just hold your document text. It must hold your core system instructions and the user's active 
+		    question. You must reserve a buffer for this.
+		      • System Instructions + User Question Buffer: approx 500 tokens.
+		      • Remaining Context for RRF Chunks: 4,096 - 500 = 3,596 tokens.
+	    Step 2: How many RRF Top-Ranked Chunks can fit?
+                    Because your ingestion pipeline chops documents into uniform 500-word blocks, each chunk consumes roughly 665 tokens 
+		    of space. 
+		    To find your maximum RRF retrieval limit (K), divide your remaining space by your chunk size:
+		             (3696 tokens reamaining) / (665 tokens per chunk) = 5.4 chunks
+	    The Production Rule: 
+		    If your context size is 4,096 tokens, you should set your RRF final extraction limit to Top (K = 4) or (K = 5). 
+		    If you pass (K=10), Ollama will quietly cut off the tail end of your text, and your model will never see your 
+		    lowest-ranked pieces of evidence.
+	    Step 3: Can the entire original PDF fit into the context?
+		    Let's see why the "Chunk-as-a-Doc" trick was mandatory. If your average employee handbook PDF is 60 pages long, and 
+		    each page averages 400 words:
+		      • Total Words in PDF: 60 * 400 = 24,000 words.
+		      • Total Tokens in PDF: 24,000 * 1.33 31,920 tokens
+
+	  The Conclusion: A 31,920-token PDF will never fit inside a 4,096-token local model context window. It is nearly 8 times larger 
+	  than the model's entire brain capacity! This mathematical reality proves why your custom pipeline is so vital: it filters out 
+	  28,000 tokens of unneeded fluff and isolates only the specific 2,500 tokens containing the true answer. 
+
+_____________________________________________________________________________________________________________________________________________
