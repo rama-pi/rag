@@ -21,15 +21,15 @@ class PdfDocument(Document, document_type='pdf'):
         return self.metadata
 
     def dump_words(self, page: int):
-        self.parser.dump_words(self.pages[page])
+        self.parser.dump_words(self.pages[page-1])
     def parse_words(self, page: int):
-        self.parser.dump_words(self.pages[page])
+        return self.parser.parse_words(self.pages[page-1])
     def dump_lines(self, page: int):
-        self.parser.dump_lines(self.pages[page])
+        self.parser.dump_lines(self.pages[page-1])
     def parse_lines(self, page: int):
-        return self.parser.parse_lines(self.pages[page])
+        return self.parser.parse_lines(self.pages[page-1])
     def dump_paras(self, page: int):
-        self.parser.dump_paras(self.pages[page])
+        self.parser.dump_paras(self.pages[page-1])
     def parse_paras(self, page: int):
         # cast arg page # into index into pages[]i
         # assume sequential page #'s by pdf loader
@@ -37,7 +37,7 @@ class PdfDocument(Document, document_type='pdf'):
     def get_page_numbers(self):
         return [page.page_number for page in self.pages]
     def dump_pages(self):
-        self.parser.dump_pages(self.pages)
+        self.parser.dump_pages(self.pages-1)
 
 
     def preprocess(self, chunk: str):

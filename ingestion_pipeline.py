@@ -85,6 +85,7 @@ def ingest():
     for entry in os.listdir(base_path):
         doc_id = None
         status = ''
+        total_words = 0
         total_pages = 0
         total_paras = 0
         total_chunks = 0
@@ -99,6 +100,7 @@ def ingest():
                     'id': None,
                     'name': full_path,
                     'status': 'processing',
+                    'words' : total_words,
                     'pages': total_pages,
                     'paras': total_paras,
                     'chunks': total_chunks,
@@ -119,6 +121,8 @@ def ingest():
                     page_numbers = doc.get_page_numbers()
                     total_pages += len(page_numbers)
                     for page_number in page_numbers:
+                        words = doc.parse_words(page=page_number)
+                        total_words += len(words)
                         paras = doc.parse_paras(page=page_number)
                         total_paras += len(paras)
                         for para in paras:
@@ -128,6 +132,7 @@ def ingest():
                             doc.store_and_embed_chunks(doc_id, chunks)
                     result['id'] = doc_id
                     result['status'] = 'ingested'
+                    result['words'] = total_words
                     result['pages'] = total_pages
                     result['paras'] =  total_paras
                     result['chunks'] = total_chunks

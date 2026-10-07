@@ -611,4 +611,11 @@ Production search sizing: How Big the prompt can be ?
 	  than the model's entire brain capacity! This mathematical reality proves why your custom pipeline is so vital: it filters out 
 	  28,000 tokens of unneeded fluff and isolates only the specific 2,500 tokens containing the true answer. 
 
+	  Summary: what to be taken into for rough token conversion
+		   • system instructions
+		   • conversation/query
+		   • retrieved chunks
+		   • prompt structure
+		   • expected answer
+
 _____________________________________________________________________________________________________________________________________________
