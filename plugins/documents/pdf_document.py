@@ -55,12 +55,11 @@ class PdfDocument(Document, document_type='pdf'):
         return self.storer.store_chunks(doc_id, chunks)
         '''
         return super().store_chunks(doc_id, chunks)
-    def get_chunks(self, doc_id: int | None = None):
+    def get_chunks(self, doc_id: int | None = None, chunk_id: int | None = None):
         '''
         return self.storer.get_chunks(doc_id)
         '''
-        return super().get_chunks(doc_id)
-
+        return super().get_chunks(doc_id, chunk_id)
     def embed(self, chunk: list):
         embeddings = {} # key = embed model value = embedding/s
         for name,embedder in self.embedders.items():

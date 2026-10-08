@@ -186,7 +186,10 @@ def main():
 
     # open None Doc to get API access
     doc = Document.open(None, config)
-    print(doc.retrieve(query, config['top_n']))
+    rrf_result = doc.retrieve(query, config['top_n'])
+    print(rrf_result,"\n")
+    for d in rrf_result:
+        print(doc.get_chunks(chunk_id = d['cid']))
 
     '''
     # need embedders

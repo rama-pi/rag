@@ -205,11 +205,11 @@ class Document(ABC):
         '''
         return self.storer.store_chunks(doc_id, chunks)
     @abstractmethod
-    def get_chunks(self, doc_id: int | None = None):
+    def get_chunks(self, doc_id: int | None = None, chunk_id: int | None = None):
         '''
         pass
         '''
-        return self.storer.get_chunks(doc_id)
+        return self.storer.get_chunks(doc_id, chunk_id)
 
     @abstractmethod
     def store_and_embed_chunks(self, doc_id: int, chunks: list):
@@ -251,6 +251,12 @@ class Document(ABC):
 
         chunk_ids1 = set((i[0] for i in cs_ordered_score1))
         chunk_ids2 = set((i[0] for i in cs_ordered_score2))
+        chunks = set()
+        for e in cs_ordered_score1:
+            chunks.add((e[0],e[1]['doc_id']))
+        for e in cs_ordered_score2:
+            chunks.add((e[0],e[1]['doc_id']))
+
 
         rank_list = []
         #do rrf for chunks in both
@@ -281,6 +287,9 @@ class Document(ABC):
                      'rrf': rrf
                      }
                     )
+        # add in doc id's
+        chunk_map = {c[0]: c[1] for c in chunks}
+        _ = [r.update({'doc_id': chunk_map[r['cid']]}) for r in rank_list if r['cid'] in chunk_map]
         # sort the rakings of the chunsk
         rank_list = sorted(rank_list, key=lambda d: d['rrf'], reverse=True )
         return rank_list

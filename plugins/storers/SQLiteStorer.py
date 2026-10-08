@@ -156,15 +156,18 @@ class SQLiteStorer(Storer, storage_type="sqlite"):
         generated_id = self.cur.lastrowid
         # chunk_id
         return generated_id
-    def get_chunks(self, doc_id: int | None = None):
+    def get_chunks(self, doc_id: int | None = None, chunk_id: int |None=None):
         # ret chunks of doc_id doc
         # or all chunks of all docs if doc_id None
         rows = self.db_conn.execute(
             """
-            SELECT chunk_id, doc_id, chunk from chunks WHERE (:doc_id IS NULL OR doc_id = :doc_id)
+            SELECT chunk_id, doc_id, chunk FROM chunks
+            WHERE (:doc_id IS NULL OR doc_id = :doc_id)
+              AND (:chunk_id IS NULL OR chunk_id = :chunk_id);
             """,
             {
-                "doc_id": doc_id
+                "doc_id": doc_id,
+                "chunk_id": chunk_id
             }
             ).fetchall()
         # [(chunk_id, doc_id, chunk), (chunk_id, doc_id, chunk)]
@@ -252,6 +255,9 @@ class SQLiteStorer(Storer, storage_type="sqlite"):
                          }
                         )
         return
+            """
+            SELECT chunk_id, doc_id, chunk from chunks WHERE (:doc_id IS NULL OR doc_id = :doc_id)
+            """,
 
     '''
 

@@ -48,8 +48,8 @@ class NullDocument(Document, document_type='null'):
         pass
     def store_chunks(self, doc_id: int, chunks: list):
         pass
-    def get_chunks(self, doc_id: int | None = None):
-        pass
+    def get_chunks(self, doc_id: int | None = None, chunk_id: int | None = None):
+        return super().get_chunks(doc_id, chunk_id)
     def store_document(self, document_name: str, mdata: str, fhash: str):
         pass
     def store_and_embed_chunks(self, doc_id: int, chunks: list):

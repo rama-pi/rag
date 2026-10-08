@@ -50,3 +50,101 @@ Model info: sample
  		'tokenizer.ggml.token_type': None,
  		'tokenizer.ggml.tokens': None
 	}
+        Parameters
+	{
+                stop    "<|start_header_id|>"
+                stop    "<|end_header_id|>"
+                stop    "<|eot_id|>"
+	}
+	Model:		$ ollama show llama3.2
+	{
+                architecture        llama
+                parameters          3.2B
+                context length      131072
+                embedding length    3072
+                quantization        Q4_K_M
+	}
+
+
+
+Tokenizer Lib:
+	Llama 3 uses a byte-pair encoding algorithm built on top of OpenAI's tiktoken engine, hence tiktoken can be used as way to tokenize.
+
+	byte-pair encoding algorithm [BPE]:
+		1. The Core Mechanic: Data Compression for Text
+			Byte-Pair Encoding was not originally invented for AI. It was invented in 1994 as a simple lossless data compression 
+			algorithm.
+			• How it works: It looks at a massive dataset of raw text, finds the most frequently repeating pairs of bytes 
+					(characters), and merges them into a single new byte.
+			• The Loop: It repeats this merging process over and over again for millions of cycles until it has built up a 
+				    massive dictionary of highly optimized compressed text fragments.
+
+		2. Why AI Uses It: The "Vocabulary Goldilocks Zone"
+			Before BPE, older AI language systems tried to use whole words as their vocabulary base. This caused a massive 
+			structural engineering crisis:
+			• If you index only whole words, your dictionary size explodes to millions of entries to catch every possible 
+			  variation (e.g., "run", "runs", "running", "runner"). This eats up massive amounts of GPU RAM.
+			• If a user types a minor typo (like "runnning"), the model instantly throws an Out Of Vocabulary (OOV) error 
+			  and crashes because the exact word string is missing from its dictionary.
+
+		The BPE Savior: BPE sits perfectly in the middle. It naturally compresses highly frequent words into a single token 
+		(like "the" or "company"), while breaking down rarer, long words into hyper-efficient subword chunks (like your "run" 
+		+ "ning" realization). It makes an Out of Vocabulary error completely impossible because even if a user types a bizarre 
+		gibberish typo, BPE can always fall all the way back to encoding it character-by-character using individual base bytes.
+		
+		3. The Llama 3 Breakthrough: Scaling the Bit-Width
+		   When Meta trained Llama 3, they made a massive architectural shift in their BPE tokenizer compared to Llama 1 and 2:
+			• Llama 1 & 2 Tokenizer: Had a vocabulary size of 32,000 tokens.
+			• Llama 3 Tokenizer: Switched to an advanced, highly dense 128,256 token vocabulary set built natively on top 
+			                     of the cl100k_base bit-profile.
+
+	Various encoding support by tokenizer:
+		The Tiktoken Encodings Family Tree:
+		Encoding Name |	Vocabulary Size	  |	Primary Models Used In	      |		Key Characteristics
+		--------------|-------------------|-----------------------------------|------------------------------------------------------
+		o200k_base	~200,000 tokens		GPT-4o, GPT-4o-mini		The Modern Giant. Massive vocabulary optimized 
+											heavily for non-English languages and code efficiency.
+		--------------|-------------------|-----------------------------------|------------------------------------------------------
+		cl100k_base	~100,000 tokens		GPT-4, GPT-3.5-Turbo,		The Standard. The exact engine behind Llama 3's
+							text-embedding-3-small/large	tokenizer style, offering balanced compression.
+		--------------|-------------------|-----------------------------------|------------------------------------------------------
+		p50k_base	~50,000 tokens		Codex models, text-davinci-002 	The Code Specialist. Tailored for raw programming
+							/ 003				text and legacy text models.
+		--------------|-------------------|-----------------------------------|------------------------------------------------------
+		r50k_base	~50,257 tokens		Original GPT-2, GPT-3 legacy	The Pioneer. The ancient grandfather BPE vocabulary
+							models (Davinci)		started the whole subword era.
+		--------------|-------------------|-----------------------------------|------------------------------------------------------
+
+
+Prompt building / format:
+	
+	🧱 Part 1: The Concept Structure (Universal Layout)
+
+		Before looking at model-specific code, the logical arrangement of your data must always flow in a strict hierarchy. 
+		You must sandwich your source chunks between your rules and the question so the model doesn't lose attention::
+
+		[1. SYSTEM INSTRUCTIONS / CONSTRAINTS]  	<- Tell it what it can and cannot do
+		[2. RETRIEVED DATA CHUNKS (THE KNOWLEDGE)] 	<- Inject your RRF winning texts
+		[3. USER QUESTION]                      	<- Place the actual question at the very bottom
+
+	🤖 Part 2: The Model-Specific Structure (Llama 3 Syntax)
+		
+		Because you are running Llama 3 locally inside Ollama, it expects its prompt to be wrapped inside highly specific tags 
+			<|begin_of_text|>, <|start_header_id|>, etc.
+		These tell the model's neural network exactly how to parse your text blocks.
+	
+	🔍 Why this exact layout is mandatory for Llama 3:
+
+		• <|start_header_id|>system<|end_header_id|>: 
+		  This locks down its brain. It forces it to obey your rule: "Do not make up answers."
+		• <|eot_id|>: 
+		  This stands for End Of Turn. It signals to the model that a specific role (like the User or System) is done talking, 
+		  preventing the model from accidentally generating text as if it were the user.
+		• <|start_header_id|>assistant<|end_header_id|> 
+		  at the very end: This acts as a trigger phrase. It leaves the text cursor waiting right at the mouth of the model's 
+		  generation layer, telling it: "Start typing your response right here."
+
+	
+
+	
+
