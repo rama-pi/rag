@@ -188,10 +188,12 @@ def main():
     doc = Document.open(None, config)
     rrf_result = doc.retrieve(query, config['top_n'])
     print(rrf_result,"\n")
-    for d in rrf_result:
-        print(doc.get_chunks(chunk_id = d['cid']))
-    for d in rrf_result:
-        print(doc.get_document(doc_id = d['doc_id']))
+    chunks = set([le['cid'] for le in rrf_result])
+    docs = set([le['doc_id'] for le in rrf_result])
+    for c in chunks:
+        print(doc.get_chunks(chunk_id = c))
+    for d in docs:
+        print(doc.get_document(doc_id = d))
 
     '''
     # need embedders
