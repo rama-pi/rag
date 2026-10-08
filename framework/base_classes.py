@@ -196,6 +196,9 @@ class Document(ABC):
     def store_document(self, document_name: str, mdata: str, fhash: str):
         pass
     @abstractmethod
+    def get_document(self, doc_id : int):
+        return self.storer.get_document(doc_id)
+    @abstractmethod
     def chunk(self, segment: str):
         pass
     @abstractmethod
@@ -411,6 +414,8 @@ class Storer(ABC):
 
     @abstractmethod
     def store_document(self, document_name: str, metadata: str, file_content_hash: str):
+        pass
+    def get_document(self, doc_id):
         pass
     @abstractmethod
     def store_chunk(self, doc_id: int, chunk: str) -> int:

@@ -48,6 +48,8 @@ class PdfDocument(Document, document_type='pdf'):
 
     def store_document(self, document_name: str, mdata: str, fhash: str):
         return self.storer.store_document(document_name, mdata, fhash)
+    def get_document(self, doc_id : int):
+        return super().get_document(doc_id)
     def chunk(self, segment: str):
         return self.chunker.chunk(segment)
     def store_chunks(self, doc_id: int, chunks: list):

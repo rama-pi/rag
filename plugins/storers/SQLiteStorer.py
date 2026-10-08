@@ -143,6 +143,18 @@ class SQLiteStorer(Storer, storage_type="sqlite"):
             )).fetchone()
         document_id = row[0] if row else None
         return document_id
+    def get_document(self, doc_id : int):
+        row = self.cur.execute(
+                """
+                SELECT * FROM documents
+                WHERE document_id = :doc_id
+                """,
+                {
+                    "doc_id": doc_id
+                    }
+                ).fetchone()
+        # [(document_id, filename, metadata, file_content_hash]
+        return row
     def store_chunk(self, doc_id: int, chunk: str) -> int:
         # store chunk, ret chunk id
         self.cur.execute(

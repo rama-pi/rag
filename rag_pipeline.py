@@ -190,6 +190,8 @@ def main():
     print(rrf_result,"\n")
     for d in rrf_result:
         print(doc.get_chunks(chunk_id = d['cid']))
+    for d in rrf_result:
+        print(doc.get_document(doc_id = d['doc_id']))
 
     '''
     # need embedders

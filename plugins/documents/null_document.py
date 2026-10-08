@@ -44,6 +44,8 @@ class NullDocument(Document, document_type='null'):
         pass
     def store_document(self, document_name: str, mdata: str, fhash: str):
         pass
+    def get_document(self, doc_id: int):
+        return super().get_document(doc_id)
     def chunk(self, segment: str):
         pass
     def store_chunks(self, doc_id: int, chunks: list):
