@@ -1,0 +1,136 @@
+
+
+Power of RAG answering the Q lies with how good the chunking is.
+
+Why is it called "Character Splitting"?
+
+	Character is atomic, indivisible unit of text. You cannot split a single character in half.
+	The name does not mean you are splitting individual characters apart. Instead, it means characters are the units being used to 
+	calculate where the split happens.
+		• What it means: 
+			It is short for "Splitting a document based on character counts."
+		• The Contrast: 
+			It explicitly distinguishes it from Word Splitting (counting spaces), Sentence Splitting (counting periods), 
+		  	or Token Splitting (counting model-specific sub-word fragments).
+
+
+Types of chunking:
+	1. Character splitting
+		AKA (Fixed-Size Chunking)
+		A foundational text-splitting strategy that divides a long document into smaller segments based on a strict, 
+		pre-determined count of individual characters (including letters, numbers, spaces, and punctuation), rather than 
+		syntax, sentences, or semantic meaning.
+
+		Character Splitting counts literal string characters (len(text)). It is often confused with Token Splitting, which 
+		counts words/sub-words based on a specific model's tokenizer (like OpenAI or Nomic). Because 1 token usually equals 
+		roughly 4 characters in English, a Character Splitter set to 500 will yield much smaller snippets than a Token Splitter 
+		set to 500.
+
+		Chunk Size: The maximum number of characters allowed in a single chunk (e.g., 500 characters).
+		Chunk Overlap: A specified number of characters duplicated between consecutive chunks (e.g., 50 characters). This 
+			       creates a "sliding window" to ensure words or context cut off at the boundary are preserved in the next chunk.
+
+	2. Recursive character splitting
+		Definition:
+			An advanced, structure-aware evolution of character splitting. It attempts to maintain text chunks at a target 
+			character size, but prioritizes cutting text at natural grammatical boundaries (like paragraphs and sentences) 
+			rather than blindly chopping words in half mid-letter.
+
+		Core Mechanics:
+			Instead of using a single hard character limit, it uses a hierarchical list of separators (ordered from largest 
+			structural unit to smallest). The default order in standard libraries (like LangChain) is typically.
+
+		1. "\n\n" (Paragraphs)
+		2. "\n" (Lines/Sentences)
+		3. " " (Words)
+		4. "" (Individual characters — the absolute fallback)
+
+	
+		How It Works (Under the Hood):
+			It uses a fallback look-ahead logic to split the text:
+			1. Try Paragraphs: 
+				It looks at the document and tries to split it by double newlines (\n\n). If the resulting paragraphs are 
+				smaller than your target chunk size, it keeps them intact.
+			2. Fallback to Lines: 
+				If a single paragraph is still larger than the target chunk size, it moves down the list and tries to split 
+				that specific paragraph by single newlines (\n).
+			3. Fallback to Words: 
+				If a line is still too big, it splits it by spaces ( ).
+			4. Ultimate Fallback: 
+				Only if a single word is larger than your chunk size will it finally resort to a hard cut mid-word using 
+				empty characters ("").
+
+	3. Document based chunking
+		Definition
+			A chunking strategy that completely ignores arbitrary character or token limits. Instead, it parses the underlying 
+			layout, syntax, or format of a specific document type to split text natively at structural boundaries (such as 
+			Markdown headers, JSON keys, HTML tags, or PDF sections).
+
+		Core Mechanics
+			• Syntax-Driven:
+				The splitter relies on the document’s code or structural markers (e.g., #, ## in Markdown, or <tr>, 
+			  	<td> in HTML).
+			• Logical Boundaries:
+				Each chunk is inherently designed to represent a complete, standalone concept or section planned by the 
+				document's original author.
+		
+		How It Works (Under the Hood)
+			Unlike character splitters that count strings, a Document-Based Splitter operates like a basic code parser:
+				1. It reads the file and detects structural markers (e.g., a Markdown split on # Header 1).
+				2. It groups all the text underneath that specific header into a single chunk.
+				3. When it hits the next equivalent header (# Header 2), it cleanly closes Chunk 1 and starts Chunk 2.
+				4. Metadata Enrichment: It automatically attaches the source header name or structural path 
+				   (e.g., {"section": "Introduction"}) to the chunk's metadata, making it highly searchable for retrievers.
+
+
+	4. Semantic chunking with embeddings [uses Embeddings]
+		Definition
+			An advanced, dynamic chunking strategy that completely ditches fixed character limits and syntax tags. Instead, it 
+			uses vector embeddings and mathematical distance to calculate exactly where the meaning of a text changes, slicing 
+			the document only when a new topic or idea begins.
+
+		Core Mechanics
+			• Sentence-Level Core: The document is first broken down into individual, raw sentences.
+			• Semantic Distance / Similarity: An embedding model evaluates the vector space distance between consecutive sentences
+			  (or sliding groups of sentences).
+			• Dynamic Breakpoints: A mathematical threshold (like a sudden drop in cosine similarity) determines where a chunk 
+			  ends and a new one begins.
+
+		How It Works (Under the Hood)
+
+			1. Sentence Splitting: The text is divided into individual sentences.
+			2. Buffer/Windowing: To capture context smoothly, it often groups a sliding window of sentences together 
+			   (e.g., combining sentences 1, 2, 3) before embedding them.
+			3. Embedding Generation: It passes these sentence groups through an embedding model (like your nomic-embed-text) to 
+			   generate vectors.
+			4. Calculate Distance: It calculates the semantic distance (e.g., Cosine Distance) between the vector of group A and 
+			   group B.
+			5. Threshold Trigger: It charts these distances across the whole document. Wherever there is a massive statistical 
+			   spike in distance (meaning the topic changed abruptly), it drops a chunk boundary marker.
+
+	5. Segmenting chunking [uses LLM]
+		Definition
+			An intelligent text-splitting strategy that leaves algorithmic rules entirely behind. Instead of relying on character 
+			counts, punctuation, or vector math, it uses a generative model (LLM) or a specialized layout engine to analyze the 
+			document as a human reader would, segmenting the text into highly tailored, contextual chapters, topics, or semantic 
+			units.
+
+		Core Mechanics
+			• Model-Driven: 
+				Uses an LLM or an specialized multi-modal layout model (like LayoutLM) to read the source text.
+			• Intentional Breakpoints: 
+				The segments are determined by identifying shifts in narrative focus, transitions in instructional steps, or 
+				distinct changes in a conversational thread.
+	
+		How It Works (Under the Hood)
+			There are two primary ways this is executed in modern RAG engineering:
+				1. The LLM-as-a-Parser Approach: 
+					The raw text is streamed to a fast, cost-effective LLM with a prompt instruction: "Read this text and 
+					insert a special marker [SPLIT] whenever the topic shifts or a new instructional step begins." The 
+					system then splits the string precisely at those custom markers.
+				2. The Layout Segmenter Approach: 
+					For complex documents (like PDFs or financial reports), an object-detection model identifies the 
+					physical structure of the page—separating sidebars, callout boxes, headers, and footnotes into 
+					independent visual and structural segments before pulling the text out.
+
+
