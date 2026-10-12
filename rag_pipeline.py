@@ -182,7 +182,8 @@ def main():
     m = model(config["wanted_model"], config["wanted_mode"])
     a = Agent(m)
 
-    query = " What   is the vacation policy?, "
+    #query = " What   is the vacation policy?, "
+    query = "What benefits are available to full-time personnel?"
 
     # open None Doc to get API access
     doc = Document.open(None, config)

@@ -8,7 +8,7 @@ supported models:
 	├── deepseek-r1
 	├── nomic-embed-text   ← embedding model
 	└── ...
-
+_____________________________________________________________________________________________________________________________________________
 
 stop sequences:
 --------------
@@ -16,6 +16,8 @@ stop sequences:
 		stop	<|start_header_id|>
 		stop	<|end_header_id|>
 		stop	<|eot_id|>
+_____________________________________________________________________________________________________________________________________________
+
 Model info: sample
 ----------
 	{
@@ -65,7 +67,7 @@ Model info: sample
                 quantization        Q4_K_M
 	}
 
-
+_____________________________________________________________________________________________________________________________________________
 
 Tokenizer Lib:
 	Llama 3 uses a byte-pair encoding algorithm built on top of OpenAI's tiktoken engine, hence tiktoken can be used as way to tokenize.
@@ -115,9 +117,54 @@ Tokenizer Lib:
 							models (Davinci)		started the whole subword era.
 		--------------|-------------------|-----------------------------------|------------------------------------------------------
 
+_____________________________________________________________________________________________________________________________________________
+
 
 Prompt building / format:
-	
+
+	📝 Conceptual layout:
+		SYSTEM INSTRUCTIONS
+    			How the model should answer
+    			Use only the supplied context
+    			Admit when context is insufficient
+		RETRIEVED CONTEXT
+    			Document path: ...
+    			Chunk ID: ...
+    			Text: ...
+
+    			Document path: ...
+    			Chunk ID: ...
+    			Text: ...
+		USER QUESTION
+    			What benefits are available to full-time personnel?
+
+		messages = [
+				{
+					"role": "system",
+					"content": system_instructions
+				},
+				{
+					"role": "user",
+					"content": (
+							"Context:\n"
+							+ retrieved_context
+							+ "\n\nQuestion:\n"
+							+ question
+						   )
+				}
+			  ]
+
+			  role    — tells Ollama who is speaking. Here, system identifies instructions that guide the model's response
+			  content — has instructions, such as answering only from the supplied context and not inventing missing
+			  		Context: — a label we provide to separate the retrieved information from the question.
+			  		\n — a newline character. \n\n means a blank line between sections.
+			  	 	Question: — another label separating the question from the context.
+			  
+			  role, content     - Keys
+			  context, question - Lables
+			  
+
+
 	🧱 Part 1: The Concept Structure (Universal Layout)
 
 		Before looking at model-specific code, the logical arrangement of your data must always flow in a strict hierarchy. 
@@ -143,7 +190,7 @@ Prompt building / format:
 		• <|start_header_id|>assistant<|end_header_id|> 
 		  at the very end: This acts as a trigger phrase. It leaves the text cursor waiting right at the mouth of the model's 
 		  generation layer, telling it: "Start typing your response right here."
-
+_____________________________________________________________________________________________________________________________________________
 	
 
 	
