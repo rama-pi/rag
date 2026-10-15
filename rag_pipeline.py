@@ -8,6 +8,8 @@ import json
 from framework.base_classes import Document, Model, Retriever, Embedder, PreProcessor
 from framework.helpers import remove_unwanted, discover
 
+AGENT_INT_ASK = 1
+AGENT_DOC_ASK = 2
 
 config = {
     "wanted_model": "llama3.2",
@@ -45,6 +47,35 @@ config = {
     "history_file": "history.json",
     "rrf_smoothing_param": 60
 }
+
+def make_prompt(question, context):
+    system_instructions = """
+    You are a document question-answering assistant.
+
+    Answer using only the supplied context.
+    If the context is insufficient, say so clearly.
+    Do not invent facts or use outside knowledge.
+    Keep the answer relevant to the question.
+    """
+
+    retrieved_context = "\n\n".join(
+        f"Source: {item['source']}\n{item['text']}"
+        for item in context
+    )
+
+    return [
+        {
+            "role": "system",
+            "content": system_instructions.strip()
+        },
+        {
+            "role": "user",
+            "content": (
+                f"Context:\n{retrieved_context}\n\n"
+                f"Question:\n{question}"
+            )
+        }
+    ]
 
 def load_config():
     global config
@@ -106,27 +137,34 @@ class Agent():
             self.conv_builder = ConversationBuilder(retriever)
         else:
             raise Exception("wanted search type not found")
-    def ask(self,question: str):
-        if question in self.cache:
-            # full match
-            self.cache_hits += 1
-            print(self.cache[question])
-            return
-        else:
-            self.cache_misses += 1
-            # try part match
-            part_question_match = self._find_similar_questions(question)
-            if part_question_match:
-                print("\n Found these from earlier ask \n")
-                for q in part_question_match:
-                    print(q)
+    def ask(self, mode, question, context):
+        if mode == AGENT_DOC_ASK:
+            messages = make_prompt(question, context)
+            model_rep = self.model.ask(messages)
+            return model_rep
+        elif mode == AGENT_INT_ASK:
+            if question in self.cache:
+                # full match
+                self.cache_hits += 1
+                print(self.cache[question])
                 return
-        conv = self.conv_builder.build(self.history, question, config["conversation_size"])
-        answer = self.model.ask(conv)
-        self.history[datetime.now().isoformat()]={'question': question, 'answer': answer}
-        self._save_history()
-        self.cache[question] = answer
-        return answer
+            else:
+                self.cache_misses += 1
+                # try part match
+                part_question_match = self._find_similar_questions(question)
+                if part_question_match:
+                    print("\n Found these from earlier ask \n")
+                    for q in part_question_match:
+                        print(q)
+                    return
+            conv = self.conv_builder.build(self.history, question, config["conversation_size"])
+            answer = self.model.ask(conv)
+            self.history[datetime.now().isoformat()]={'question': question, 'answer': answer}
+            self._save_history()
+            self.cache[question] = answer
+            return answer
+        else:
+            return None
     def _save_history(self):
         with open(config["history_file"], "w") as f:
             json.dump(self.history,f,indent=4)
@@ -188,13 +226,18 @@ def main():
     # open None Doc to get API access
     doc = Document.open(None, config)
     rrf_result = doc.retrieve(query, config['top_n'])
-    print(rrf_result,"\n")
-    chunks = set([le['cid'] for le in rrf_result])
-    docs = set([le['doc_id'] for le in rrf_result])
-    for c in chunks:
-        print(doc.get_chunks(chunk_id = c))
-    for d in docs:
-        print(doc.get_document(doc_id = d))
+
+    # build prompt
+    chunks = [{'source':doc.get_chunks(chunk_id=le['cid'])[0][1], 'text':doc.get_chunks(chunk_id=le['cid'])[0][2]} for le in rrf_result]
+    a.ask(AGENT_DOC_ASK, query, chunks)
+    #prompt = make_prompt(query, chunks)
+    #print(prompt)
+    '''
+    retrieved_chunks = list(dict.fromkeys(doc.get_chunks(chunk_id=le['cid'])[0][2] for le in rrf_result))
+    retrieved_from_docs = list(dict.fromkeys(doc.get_document(doc_id=le['doc_id'])[1] for le in rrf_result))
+    print(retrieved_chunks)
+    print(retrieved_from_docs)
+    '''
 
     '''
     # need embedders
