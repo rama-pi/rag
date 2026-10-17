@@ -228,7 +228,8 @@ class Document(ABC):
             self.storer.store_vector(chunk_id, embedding.embeddings[0])
         return
     @abstractmethod
-    def retrieve(self, qchunk: str, top_n: int):
+    #def retrieve(self, qchunk: str, top_n: int):
+    def retrieve(self, qchunk: str):
         '''
         pass
         '''
@@ -245,9 +246,11 @@ class Document(ABC):
         # call each type retriever, each returns a score against the query chunk
         for retriever in self.retrievers:
             if retriever['type'] == 'sparse':
-                cs_ordered_score1 = retriever['retriever'].retrieve(qchunk, doc_chunks, top_n)
+                #cs_ordered_score1 = retriever['retriever'].retrieve(qchunk, doc_chunks, top_n)
+                cs_ordered_score1 = retriever['retriever'].retrieve(qchunk, doc_chunks)
             if retriever['type'] == 'dense':
-                cs_ordered_score2 = retriever['retriever'].retrieve(qembed, doc_embeds, doc_chunks, top_n)
+                #cs_ordered_score2 = retriever['retriever'].retrieve(qembed, doc_embeds, doc_chunks, top_n)
+                cs_ordered_score2 = retriever['retriever'].retrieve(qembed, doc_embeds, doc_chunks)
         # rrf 
         # collect chunk ids from each retriever
         k = self.config["rrf_smoothing_param"]
@@ -293,7 +296,7 @@ class Document(ABC):
         # add in doc id's
         chunk_map = {c[0]: c[1] for c in chunks}
         _ = [r.update({'doc_id': chunk_map[r['cid']]}) for r in rank_list if r['cid'] in chunk_map]
-        # sort the rakings of the chunsk
+        # sort the rakings of the chunks
         rank_list = sorted(rank_list, key=lambda d: d['rrf'], reverse=True )
         return rank_list
 

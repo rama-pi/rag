@@ -7,7 +7,8 @@ class DenseSimilarityRetriever(Retriever, retriever_name="dense_similarity_retri
     def __init__(self, retriever_name):
         self.name = retriever_name
         return
-    def retrieve(self, qvector: list, docvectors: list, docchunks: list, top_n: int):
+    #def retrieve(self, qvector: list, docvectors: list, docchunks: list, top_n: int):
+    def retrieve(self, qvector: list, docvectors: list, docchunks: list):
         d = {}
         for vec, (chunk_id, doc_id, chunk) in zip(docvectors, docchunks):
             '''
@@ -24,7 +25,8 @@ class DenseSimilarityRetriever(Retriever, retriever_name="dense_similarity_retri
                     }
         top_n = sorted(
                 d.items(), key=lambda item: item[1]['score'], reverse=True
-        )[:top_n]
+        #)[:top_n]
+        )
 
         return top_n
 

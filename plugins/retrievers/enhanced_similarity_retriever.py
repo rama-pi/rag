@@ -10,7 +10,8 @@ class EnhancedSimilarityRetriever(Retriever, retriever_name="enhanced_similarity
             normally one is stored chunk of docs, other is query chunk.
             return N ranked chunks using vocabulary-frequency vectors and cosine similarity.
         '''
-    def retrieve(self, qchunk: str, chunks: list, top_n: int):
+    #def retrieve(self, qchunk: str, chunks: list, top_n: int):
+    def retrieve(self, qchunk: str, chunks: list):
         d = {}
         # get cosine pair
         for (chunk_id, doc_id, chunk) in chunks:
@@ -22,7 +23,8 @@ class EnhancedSimilarityRetriever(Retriever, retriever_name="enhanced_similarity
                     }
         top_n = sorted(
                 d.items(), key=lambda item: item[1]['score'], reverse=True
-        )[:top_n]
+        #)[:top_n]
+        )
 
         return top_n
 

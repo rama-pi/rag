@@ -60,8 +60,10 @@ class NullDocument(Document, document_type='null'):
     '''
         Allowed on none document
     '''
-    def retrieve(self, chunk: str, top_n: int):
-        return super().retrieve(chunk, top_n)
+    #def retrieve(self, chunk: str, top_n: int):
+    def retrieve(self, chunk: str):
+        #return super().retrieve(chunk, top_n)
+        return super().retrieve(chunk)
 
 
 

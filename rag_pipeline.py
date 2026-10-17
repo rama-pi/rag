@@ -225,11 +225,13 @@ def main():
 
     # open None Doc to get API access
     doc = Document.open(None, config)
-    rrf_result = doc.retrieve(query, config['top_n'])
+    #rrf_result = doc.retrieve(query, config['top_n'])
+    rrf_result = doc.retrieve(query)
+    print(rrf_result)
 
     # build prompt
     chunks = [{'source':doc.get_chunks(chunk_id=le['cid'])[0][1], 'text':doc.get_chunks(chunk_id=le['cid'])[0][2]} for le in rrf_result]
-    print(chunks,"\n")
+    #print(chunks,"\n")
     a.ask(AGENT_DOC_ASK, query, chunks)
     #prompt = make_prompt(query, chunks)
     #print(prompt)
