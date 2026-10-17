@@ -46,10 +46,12 @@ Future improvements:
 
 
 #separators = ["\n\n", "\n", ". ", " "]
-separators = ["\n\n", "\n", ". "]
+#separators = ["\n\n", "\n", ". "]
 #separators = ["\n\n", "\n"]
-chunk_size = 50
+separators = [", "]
+chunk_size = 100
 chunk_overlap = 0
+threshold = 50
 
 def chunk_keep_full_word(s, l):
     chunks = []
@@ -83,6 +85,18 @@ class RecursiveChunker(Chunker, chunker_type='recursive'):
                                         if piece.strip()
                      ]
         chunks += [chunk for t in tlist for chunk in chunk_keep_full_word(t, chunk_size)]
+        # adaptive overlap
+        for i, c in enumerate(chunks):
+            if len(c) < threshold:
+                adaptive_size = threshold - len(c)
+                if i != 0:
+                    previous = chunks[i-1]
+                    current = chunks[i]
+                    start = len(previous) - adaptive_size
+                    while start > 0 and chunks[i-1][start - 1] != ' ':
+                        start -= 1
+                    overlap = chunks[i-1][start:]
+                    chunks[i]= overlap + " " + chunks[i]
         return chunks
 
 
