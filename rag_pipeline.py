@@ -227,12 +227,22 @@ def main():
     doc = Document.open(None, config)
     #rrf_result = doc.retrieve(query, config['top_n'])
     rrf_result = doc.retrieve(query)
-    print(rrf_result)
+    #print(rrf_result)
 
     # build prompt
-    chunks = [{'source':doc.get_chunks(chunk_id=le['cid'])[0][1], 'text':doc.get_chunks(chunk_id=le['cid'])[0][2]} for le in rrf_result]
+    chunks = [{'source':[doc.get_chunks(chunk_id=le['cid'])[0][1]], 'text':doc.get_chunks(chunk_id=le['cid'])[0][2]} for le in rrf_result]
     #print(chunks,"\n")
-    a.ask(AGENT_DOC_ASK, query, chunks)
+    deduped_chunks = []
+    for od in chunks:
+        added = False
+        for id in deduped_chunks:
+            if id['text'] == od['text']:
+                id['source'] = [*id['source'] , *od['source']]
+                added = True
+                break
+        if not added:
+            deduped_chunks.append(od)
+    a.ask(AGENT_DOC_ASK, query, deduped_chunks)
     #prompt = make_prompt(query, chunks)
     #print(prompt)
     '''
