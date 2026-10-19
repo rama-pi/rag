@@ -150,10 +150,10 @@ class SQLiteStorer(Storer, storage_type="sqlite"):
                 WHERE document_id = :doc_id
                 """,
                 {
-                    "doc_id": doc_id
-                    }
+                    "doc_id": doc_id,
+                }
                 ).fetchone()
-        # [(document_id, filename, metadata, file_content_hash]
+        # [(document_id, filename, metadata, file_content_hash)]
         return row
     def store_chunk(self, doc_id: int, chunk: str) -> int:
         # store chunk, ret chunk id

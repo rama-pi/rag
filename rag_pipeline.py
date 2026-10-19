@@ -59,7 +59,7 @@ def make_prompt(question, context):
     """
 
     retrieved_context = "\n\n".join(
-        f"Source: {item['source']}\n{item['text']}"
+        f"Source: {item['source']}\n{item['chunk']}"
         for item in context
     )
 
@@ -230,19 +230,35 @@ def main():
     #print(rrf_result)
 
     # build prompt
-    chunks = [{'source':[doc.get_chunks(chunk_id=le['cid'])[0][1]], 'text':doc.get_chunks(chunk_id=le['cid'])[0][2]} for le in rrf_result]
-    #print(chunks,"\n")
+    #chunks = [{'source':[doc.get_chunks(chunk_id=le['cid'])[0][1]], 'text':doc.get_chunks(chunk_id=le['cid'])[0][2]} for le in rrf_result]
+    chunks = []
+    for le in rrf_result:
+        chunk_id, doc_id, chunk = doc.get_chunks(chunk_id=le['cid'])[0]
+        document_id, filename, metadata, file_content_hash = doc.get_document(doc_id=doc_id)
+        metadata = json.loads(metadata)
+        chunks.append(
+                {'source_id': [doc_id],
+                 'source': [filename],
+                 'creation_date': [metadata['CreationDate']],
+                 'chunk': chunk
+                 }
+                )
+    #dedup chunks
     deduped_chunks = []
     for od in chunks:
         added = False
         for id in deduped_chunks:
-            if id['text'] == od['text']:
-                id['source'] = [*id['source'] , *od['source']]
+            if id['chunk'] == od['chunk']:
+                id['source_id'] = [*id['source_id'], *od['source_id']]
+                id['source'] = [*id['source'], *od['source']]
+                id['creation_date'] = [*id['creation_date'], *od['creation_date']]
                 added = True
                 break
         if not added:
             deduped_chunks.append(od)
-    a.ask(AGENT_DOC_ASK, query, deduped_chunks)
+    print(deduped_chunks)
+    #ask model
+    a.ask(AGENT_DOC_ASK, query, deduped_chunks[:config['top_n']])
     #prompt = make_prompt(query, chunks)
     #print(prompt)
     '''
