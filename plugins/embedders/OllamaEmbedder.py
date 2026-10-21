@@ -13,4 +13,9 @@ class Ollama_Embedder(Embedder, embed_model="nomic-embed-text"):
                 model="nomic-embed-text",
                 input=chunk
             )
+
+        if not response.embeddings or not response.embeddings[0]:
+            raise ValueError(
+                    f"Ollama returned an empty embedding for chunk: {chunk!r}"
+                    )
         return response

@@ -221,7 +221,10 @@ def main():
     a = Agent(m)
 
     #query = " What   is the vacation policy?, "
-    query = "What benefits are available to full-time personnel?"
+    #query = "What benefits are available to full-time personnel?"
+    #query = "What Bluetooth connectivity and compatibility features does the hearing aid support, including compatible phones, computers, Bluetooth versions or protocols, and simultaneous connections to multiple devices?"
+    #query = "According to the AI Index Report 2026, how did generative AI adoption compare with the adoption of personal computers and the internet?"
+    query = "What recommendations does the report make for integrating artificial intelligence into teaching and learning, and what risks or challenges does it identify?"
 
     # open None Doc to get API access
     doc = Document.open(None, config)

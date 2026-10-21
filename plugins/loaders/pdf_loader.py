@@ -31,14 +31,24 @@ class PdfLoader(Loader, loader_type="pdf"):
                 page.tables  = pg.extract_tables()
                 page.annotations = pg.annots
                 page.metadata = pdf.metadata
+                page.images = []
+                print("Page :", pg.page_number)
                 for img_meta in pg.images:
-                    # pg.images is a list of metadata dictionaries
+                    # pg.images is a list of image metadata dictionaries
                     for img_meta in pg.images:
+                        # deal 1 image
                         # Crop the page view strictly down to the image boundarie
-                        cropped_page = pg.crop((img_meta["x0"],
-                                                img_meta["top"],
-                                                img_meta["x1"],
-                                                img_meta["bottom"]
+                        # fix images crossing pages or such
+                        x0 = max(img_meta["x0"], pg.bbox[0])
+                        top = max(img_meta["top"], pg.bbox[1])
+                        x1 = min(img_meta["x1"], pg.bbox[2])
+                        bottom = min(img_meta["bottom"], pg.bbox[3])
+                        if x0 >= x1 or top >= bottom:
+                            continue
+                        cropped_page = pg.crop((x0,
+                                                top,
+                                                x1,
+                                                bottom
                                                 )
                                                )
                         # Render the cropped view into a high-res PNG object

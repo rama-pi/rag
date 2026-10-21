@@ -36,12 +36,16 @@ class Model(ABC):
 
 class Document(ABC):
     registry = {}
+    band_aids = """
+    getting empty chunks
+    """
 
     def __init_subclass__(cls, document_type=None, **kwargs):
         # this runs earlier that __init__
         super.__init_subclass__(**kwargs)
         cls.document_type = document_type
         Document.registry[document_type] = cls
+        print(f"Band-aids in Document {band_aids}")
 
     def __init__(self, config: dict):
         self.loader = None
@@ -220,6 +224,9 @@ class Document(ABC):
         # model name of the embedder
         model_name = self.config["dense_embedder"]["model_name"]
         for chunk in chunks:
+            #skip empty chunk
+            if not chunk.strip():
+                continue
             #store chunk
             chunk_id = self.storer.store_chunk(doc_id, chunk)
             #create embedding

@@ -2,9 +2,9 @@ import os, sys, json, re, string
 from datetime import datetime
 import ctypes
 from contextlib import contextmanager
+import traceback
 
 from framework.base_classes import Storer
-
 import struct
 import ollama
 
@@ -95,6 +95,7 @@ class SQLiteStorer(Storer, storage_type="sqlite"):
             yield
         except Exception as e:
             self.transaction_abort()
+            traceback.print_exc()
             raise TransactionAborted(
                     "Transaction rolled back and terminated."
                     ) from e
@@ -188,17 +189,16 @@ class SQLiteStorer(Storer, storage_type="sqlite"):
         # store chunk chunk_id's embedding
         vector_len = len(vec)
         vector_bytes = struct.pack(f"{vector_len}f", *vec)
-        with self.db_conn:
-            self.cur.execute(
-                """
-                INSERT INTO vec_chunks (chunk_id, vec_len, embedding) VALUES (:id, :vec_len, :emb)
-                """,
-                {
-                    "id":chunk_id,
-                    "vec_len": vector_len,
-                    "emb":vector_bytes
+        self.cur.execute(
+            """
+            INSERT INTO vec_chunks (chunk_id, vec_len, embedding) VALUES (:id, :vec_len, :emb)
+            """,
+            {
+                "id":chunk_id,
+                "vec_len": vector_len,
+                "emb":vector_bytes
                 }
-                )
+            )
         return None
     def get_vector(self, chunk_id: int) -> list:
         packed_vec = self.cur.execute(
